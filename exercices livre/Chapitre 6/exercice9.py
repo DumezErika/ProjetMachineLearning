@@ -15,10 +15,11 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RidgeCV
 from sklearn.linear_model import LassoCV
 from sklearn.decomposition import PCA
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import make_scorer
 from sklearn.metrics import SCORERS
-from sklearn.metrics import neg_mean_squared_error
+from sklearn.metrics import mean_squared_error
+from sklearn.cross_decomposition import PLSRegression
 sns.set_theme(style='darkgrid')
 
 college_ = pd.read_csv("College.csv", index_col=0)
@@ -50,9 +51,37 @@ mse_lasso = np.mean((y_test - y_pred_lasso)**2)
 print(mse_lasso)
 
 #e)
-X_pca = PCA(n_components=2).fit(X_train).transform(X_train)
+def f(pc):
+    pca = PCA()
+    Xreg = pca.fit_transform(X_train)[:,:pc]
+    regr = LinearRegression()
+    y_cv = cross_val_predict(regr, Xreg, y_train)
+    return(mean_squared_error(y_train,y_cv))
+pc = 1
+min = f(pc)
+for i in range(2,16):
+    if f(i) < min:
+        min = f(i)
+        pc = i
 pca = PCA()
-Xreg = pca.fit_transform(X_train)[:,:pc]
+Xreg_train = pca.fit_transform(X_train)[:,:pc]
+Xreg_test = pca.fit_transform(X_test)[:,:pc]
 regr = LinearRegression()
-y_cv = cross_validate(regr, Xreg, y_train)
+y_pred_pcr = regr.fit(Xreg_train, y_train).predict(Xreg_test)
+print(mean_squared_error(y_test, y_pred_pcr))
 
+#f)
+pls = PLSRegression(1)
+y_cv = cross_val_predict(pls, X_train, y_train)
+min_mse = mean_squared_error(y_train, y_cv)
+pc = 1
+for i in range(2,16):
+    pls = PLSRegression(i)
+    y_cv = cross_val_predict(pls, X_train, y_train)
+    mse = mean_squared_error(y_train,y_cv)
+    if mse < min_mse:
+        min_mse = mse
+        pc = i
+pls = PLSRegression(pc)
+y_pred_pls = pls.fit(X_train, y_train).predict(X_test)
+print(mean_squared_error(y_test, y_pred_pls))
