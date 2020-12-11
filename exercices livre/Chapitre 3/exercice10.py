@@ -1,11 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-import sklearn.linear_model as lm
-import numpy as np
 import statsmodels.formula.api as smf
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
-sns.set_theme(style="darkgrid")
 
 c = pd.read_csv("Carseats.csv")
 
