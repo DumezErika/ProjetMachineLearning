@@ -1,12 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn import linear_model
-import numpy as np
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-import sklearn.linear_model as lm
-from statsmodels.sandbox.regression.predstd import wls_prediction_std
 sns.set_theme(style='darkgrid')
 
 auto = pd.read_csv("Auto.csv")
