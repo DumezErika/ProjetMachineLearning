@@ -1,12 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn import linear_model
 import numpy as np
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
-import sklearn.linear_model as lm
-from statsmodels.sandbox.regression.predstd import wls_prediction_std
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -37,13 +32,13 @@ confusion = confusion_matrix(y, y_pred)
 weekly_copy = weekly.copy()
 weekly_copy = weekly_copy.loc[weekly_copy["Year"] <= 2008]
 A = weekly_copy[["Lag2"]]
-b = weekly_copy[["Direction"]]
+b = weekly_copy["Direction"]
 clf2 = LogisticRegression().fit(A,b)
 
 weekly_copy2 = weekly.copy()
 weekly_copy2 = weekly_copy2.loc[weekly_copy2["Year"] > 2008]
 C = weekly_copy2[["Lag2"]]
-d = weekly_copy2[["Direction"]]
+d = weekly_copy2["Direction"]
 d_pred = clf2.predict(C)
 confusion = confusion_matrix(d, d_pred)
 
