@@ -21,7 +21,7 @@ weekly = pd.read_csv("Weekly.csv")
 
 #b)
 X = weekly.iloc[:,1:7]
-y = weekly.iloc[:,8:9]
+y = weekly['Direction']
 clf = LogisticRegression().fit(X,y)
 
 #c)
