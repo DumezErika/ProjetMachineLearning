@@ -10,7 +10,7 @@ sns.set_theme(style="darkgrid")
 
 auto = pd.read_csv("Auto.csv")
 df = auto.copy()
-df = df.loc[b["horsepower"]!= "?"]
+df = df.loc[df["horsepower"]!= "?"]
 temp = pd.to_numeric(df["horsepower"])
 df["horsepower"] = temp
 
