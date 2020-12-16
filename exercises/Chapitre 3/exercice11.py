@@ -11,7 +11,7 @@ y =2*x + np.random.normal(size=100)
 
 df = pd.DataFrame({'x': x, 'y': y})
 
-sns.regplot(x='x', y='y')
+sns.regplot(x='x', y='y', data=df)
 
 #a)
 reg = smf.ols('y ~ x + 0', df).fit()
