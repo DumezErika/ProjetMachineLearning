@@ -1,0 +1,146 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{systeme}
+\usepackage{stmaryrd}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Définition}
+\theoremstyle{theorem}
+\newtheorem{theorem}{Théorème}
+
+\author{Della Bona Sarah, Dumez Erika}
+\title{Introduction to neural ODE}
+\begin{document}
+\maketitle
+ 
+ 
+\section{Ordinary Differential Equations}
+
+\subsection{A refresher on ODE}
+
+\begin{definition}
+Let $f: \Omega \subseteq \mathbb{R} x \mathbb{R}^N \rightarrow \mathbb{R}^N$. 
+
+A \textit{first order ODE} takes of the form:
+\[
+\partial_t u(t) = f(t,u(t)) \textbf{   (1)}
+\]
+
+\begin{itemize}
+\item A \textit{solution} for (1) is a function $u : I \rightarrow \mathbb{R}^N$ where $I$ is an interval of $\mathbb{R}$ such that:
+	\begin{itemize}
+	\item u is derivable on I,
+	\item $\forall t \in I, f(t, u(t)) \in \Omega$,
+	\item $\forall t \in I, \partial_t u(t) = f(t, u(t))$
+	\end{itemize}
+\item An \textit{initial condition} (IC) is a condition of the type:
+\[
+u(t_0) = u_0
+\]
+where $(t_0, u_0) \in \Omega$ is fixed.
+\end{itemize}
+\item A \textit{Cauchy problem} is an ODE with IC
+\[
+\left \{
+\begin{array}{rcl}
+\partial_t u(t) & = & f(t, u(t)) \\
+u(t_0) & = & u_0
+\end{array}
+\right.
+\]
+\end{definition}
+
+\begin{definition}
+A \textit{k-order ODE} is of the form:
+\[
+\partial^k_t v(t) = g(t, v(t), ... , \partial^{k-1}v(t))
+\]
+where 
+   \begin{eqnarray}
+   \nonumber
+   v & : & I \rightarrow \mathbb{R}^N \\ 
+   \nonumber
+   g & : & \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
+   \end{eqnarray}
+\end{definition}
+
+It is not always possible to explicitly find a solution to a Cauchy problem, but we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution. 
+
+More precisely, let $T \in \mathbb{R}\\\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ s.t. 
+\[
+u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
+\]
+
+Let $h_i := t_{i+1} - t_i$, it is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Eular's method.
+
+\subsection{Eular's method}
+
+Eular's method is similar to a Taylor development, the idea is to compute $u(t_{i+1})$ using the following formula:\footnote{We consider that $ \forall i\ \{0,...,n\}, h_i = h$.}
+\[
+u(t_{i+1}) \approx u(t_i) + h . \partial u(t_i)
+\]
+where 
+\[
+\partial u(t_i) = f(t_i, u(t_i)).
+\]
+
+\section{Neural networks}
+Neural networks are popular types of machine learning models.\textbf{[insert formal definition of neural networks]}.
+Neural networks consist of a series of layers which are just matrix operations, and each layer introduces a little bit of error that compounds through the network as we propagate forward. 
+So we can think of neural networks as a giant composite function of functions within functions, for as many layers as there are.
+
+\section{Residual neural network theory}
+\textbf{Insérer des images !!!!}
+Residual networks have the best accuracy. The only change to a regular neural network is that we not only feed the output of the previous layer to the next, but also the input of that layer. It creates skip connections, so that the network can decide how deep it needs to be. As a formula, the $k+1$th layer has the formula:
+\[
+x_{k+1} = x_k + F(x_k)
+\]
+where $F$ is the function of the $k$th layer and its activation. This simple formula is a special case of the formula:
+\[
+x_{k+1} = x_k + h.F(x_k),
+\]
+which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$.
+
+
+\section{Neural ODE}
+
+
+\subsection{Forward pass}
+
+\subsection{Adjoint method}
+ 
+\subsection{Backwward pass}
+
+
+
+
+
+
+
+
+
+
+
+
+Useful for time series data better than recurrent neural network and their variants. 
+Neural networks are function approximators. They are a series of matrix operations that we apply to matrices. So we have the input matrices, we apply these operations to it and we get an output, this output is the prediction. 
+
+We group these networks into what are called discrete layers. Layers are just a block of operations.
+Input times weight, add a bias, activate, repeat.
+
+Here, let's consider a neural network as a continuous function with no grouping, no blocks. Instead of having single layers, we have the entire network be one continuous block of computation. This means that we do not need to specify the number of layers beforehand. We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. 
+
+Why does this matter?  It has more accurate results for time series predictions (i.e. continuous-time models like finance: how do stock prices change overtime, healthcare: how the patient's biometric data change over time). It also has a faster testing time than recurrent networks (but slower training time) so it's perfect for low power edge computing. (trade-off between precision and speed) Another point is that we can use entirely different optimization solvers (instead of gradient descent for example), here differential equation solvers, for which there's a hundred plus years of theory behind that has not been used yet for neural networks. Lastly, there's a constant memory cost, instead of linearly increasing the cost for each layers in a regular neural network. 
+
+The thing about neural network is that with these discrete layers, they expect the intervals for these time series data sets to be fixed (like everyday, every hour, every second). But that's not how the real world operates. Neural networks are bad at predicting output for time series data that is irregular (like in hospitals, doctors don't test a patient's biometric data at fixes time intervals). 
+
+\textbf{Regarder le fonctionnement de la descente de gradient dans le cas où il y a plusieurs hidden layers !}
+
+\end{document}
