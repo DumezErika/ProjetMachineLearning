@@ -25,6 +25,8 @@
 
 \subsection{A refresher on ODE}
 
+An ODE is a function that describes the changes of a function, $u$, through time. In this setting, time is a continuous variable and we don't know the real function, only its derivative.
+
 \begin{definition}
 Let $f: \Omega \subseteq \mathbb{R} x \mathbb{R}^N \rightarrow \mathbb{R}^N$. 
 
@@ -78,11 +80,11 @@ More precisely, let $T \in \mathbb{R}\\\{0\}$ such that the solution $u$ exists 
 u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
 \]
 
-Let $h_i := t_{i+1} - t_i$, it is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Eular's method.
+Let $h_i := t_{i+1} - t_i$, it is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Euler's method.
 
-\subsection{Eular's method}
+\subsection{Euler's method}
 
-Eular's method is similar to a Taylor development, the idea is to compute $u(t_{i+1})$ using the following formula:\footnote{We consider that $ \forall i\ \{0,...,n\}, h_i = h$.}
+Euler's method is similar to a Taylor development, the idea is to compute $u(t_{i+1})$ using the following formula:\footnote{We consider that $ \forall i\ \{0,...,n\}, h_i = h$.}
 \[
 u(t_{i+1}) \approx u(t_i) + h . \partial u(t_i)
 \]
@@ -92,12 +94,36 @@ where
 \]
 
 \section{Neural networks}
-Neural networks are popular types of machine learning models.\textbf{[insert formal definition of neural networks]}.
-Neural networks consist of a series of layers which are just matrix operations, and each layer introduces a little bit of error that compounds through the network as we propagate forward. 
-So we can think of neural networks as a giant composite function of functions within functions, for as many layers as there are.
+
+In a typical machine learning problem, you are given some input $x$ and you want to predict an output $y$. A \textit{neural network} can be used to solve such a problem. It consists of a series of layers. These layers are matrix operations. The first layer takes an input and the result of the computation on that input is given to the hidden layers. An hidden layer takes an input from the previous layer and compute an output for the next. The last layer returns the final output, the prediction. 
+
+We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. 
+
+\includegraphics[scale=0.7]{nn.png}
+
+Each layer introduces a little bit of error that propagate through the network. 
+
+\subsection{Example}
+
+Let's consider a neural network, with one hidden layer, that takes a 2-dimensional input $x = (x_1, x_2)$, and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
+
+   \begin{eqnarray}
+   \nonumber
+   z_i & = & \sum_{j=1}^2 w_{ij}^{(1)}x_j + b_i^{(1)} \text{ pour } i = 1,2 \\ 
+   \nonumber
+   h_i & = & \sigma (z_i) \text{ pour } i=1,2 \\
+   \nonumber
+   y_k & = & \sum_{i=1}^2 w_{ki}^{(2)}h_i + b_k^{(2)} \text{ pour } k = 1,2 \\
+   \nonumber
+   \mathcal{L} & = & \frac{1}{2} \sum_{k = 1}^2 (y_k - t_k)^2
+   \end{eqnarray}
+   
+where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the network, and $t = (t_1, t_2)$ is the value we want to approximate (the "real" output for $x$). 
+
+\subsection{Back propagation}
 
 \section{Residual neural network theory}
-\textbf{Insérer des images !!!!}
+
 Residual networks have the best accuracy. The only change to a regular neural network is that we not only feed the output of the previous layer to the next, but also the input of that layer. It creates skip connections, so that the network can decide how deep it needs to be. As a formula, the $k+1$th layer has the formula:
 \[
 x_{k+1} = x_k + F(x_k)
@@ -106,11 +132,21 @@ where $F$ is the function of the $k$th layer and its activation. This simple for
 \[
 x_{k+1} = x_k + h.F(x_k),
 \]
-which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$.
+which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can introduce neural ODE.
 
 
 \section{Neural ODE}
 
+\subsection{Introduction}
+
+(In this case, the initial condition for the system is "time" $0$, which indicates the very first layer of the neural network, and as $x(0)$ will serve the normal input. The final condition at "time" $t$ will be the desired output of the neural network: a scalar value, a vector representing classes or anything else.
+These residuals connections are discretised time steps of the Euler method, it means that we can regulate the depth of the neural network, just with choosing the discretising scheme, hence, making the solution (aka the neural network) more or less accurate, even making it infinite-layer like. )
+
+\includegraphics[scale=1]{resnetvsodenet.png}
+
+
+
+\subsection{definition?}
 
 \subsection{Forward pass}
 
@@ -118,6 +154,62 @@ which is the formula for the Euler method for solving ordinary differential equa
  
 \subsection{Backwward pass}
 
+\subsection{Advantages and disadvantages  }
+
+In regular neural networks, we consider discrete, individual and independent layers. They are just a block of operations and the neural network consists of those blocks. However, ODE network can be seen as continuous functions. Instead of having separate layers, the entire network is one continuous block of computation. This leads to many advantages but also some disadvantage:
+\begin{itemize}
+\item The most benefit is that ODENet has more accurate results for time series predictions. Regular neural network have discrete layers, which means they expect the intervals for these time series data sets to be fixed. Therefore, they are bad at predicting output for time series data that is irregular.
+\item They have a faster testing time than regular networks, but a slower training time. Thus it's perfect for low power edge computing. There is a trade-off between precision and speed.
+\item We can use ordinary differential equations solvers instead of gradient descent. These solvers have a hundred plus years of theory behind them.
+\item Lastly, there's a constant memory cost, instead of increasing the cost linearly with each layer in a regular network.
+\end{itemize}
+
+
+
+
+
+
+
+
+\textbf{voir def vector field}
+
+\textbf{voir probleme du vanishing gradient dans les nn regulier}
+
+\textbf{ recherche the Universal Approximation Theorem states that, for enough layers or enough parameters, $ML(x)$ can approximate any nonlinear function sufficiently close (subject to some constraints).}
+
+
+
+
+
+
+
+% https://julialang.org/blog/2019/01/fluxdiffeq/
+
+This generation of a prediction $y$ from $x$ is a machine learning model ($ML$). During training, we attempt to adjust the parameters of $ML$ so that it generates accurate predictions. $y = ML(x)$. The reason $ML$ is interesting is because its form is basic but adapts to the data itself. The theory and practice of machine learning confirms that this is a good way to learn nonlinearities.  For example, 
+
+
+
+Instead of learning the nonlinear transformation directly, we wish to learn the structures of the nonlinear transformation. Thus, instead of doing $y = ML(x)$, we put the machine learning model on the derivative, $y'(x) = ML(x)$, and now we solve the ODE. Why do this? One motivation is that defining the model in this way and then solving the ODE using the simplest and most error prone method, the Euler method, what we get is equivalent to a residual neural network. Rather than adding more layers, we can just model the differential equation directly and then solve it using a purpose-built ODE solver. 
+
+\textbf{Let's put an ODE into a neural net framework!}
+
+To understand embedding an ODE into a neural network, let's look at what a neural network layer actually is. A layer is really just a differentiable function which takes in a vector of size $n$ and spits out a new vector of size $m$. 
+Turns out that differential equations solvers fit this framework, too: a solve takes in some vector $p$ (which might include parameters like the initial starting point), and outputs some new vectors, the solution. Moreover it's differentiable, which means we can put it straight into a larger differentiable program. This larger program can happily include neural networks, and we can keep using standard optimisation techniques like ADAM to optimise their weights.
+
+% https://stats.stackexchange.com/questions/445562/what-are-the-practical-uses-of-neural-odes
+
+For time series and density modelling, neural ODEs offer some benefits that we don't know how to get otherwise. For plain supervised learning, there are potential computational benefits, but for practical purposes they probably aren't worth using yet in that setting.
+
+Neural ODEs differ in two ways from standard nets:
+
+\begin{enumerate}
+\item They represent a different set of functions, which can be good or bad depending on what you're modelling.
+\item We have to approximate their exact solution, which gives more freedom in how to compute the answer, but adds complexity.
+\end{enumerate}
+
+The clearest setting where neural ODEs help is building continuous-time series models, which can easily handle data coming at irregular intervals. However, ODEs can only model deterministic dynamics. 
+
+Conventional nets can be evaluated exactly with a fixed amount of computation, and are typically faster to train. Plus, with standard nets you don't have to choose an error tolerance for a solver.
 
 
 
@@ -129,18 +221,34 @@ which is the formula for the Euler method for solving ordinary differential equa
 
 
 
-Useful for time series data better than recurrent neural network and their variants. 
-Neural networks are function approximators. They are a series of matrix operations that we apply to matrices. So we have the input matrices, we apply these operations to it and we get an output, this output is the prediction. 
+(Here, let's consider a neural network as a continuous function with no grouping, no blocks. Instead of having single layers, we have the entire network be one continuous block of computation. This means that we do not need to specify the number of layers beforehand. We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. )
 
-We group these networks into what are called discrete layers. Layers are just a block of operations.
-Input times weight, add a bias, activate, repeat.
 
-Here, let's consider a neural network as a continuous function with no grouping, no blocks. Instead of having single layers, we have the entire network be one continuous block of computation. This means that we do not need to specify the number of layers beforehand. We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. 
 
-Why does this matter?  It has more accurate results for time series predictions (i.e. continuous-time models like finance: how do stock prices change overtime, healthcare: how the patient's biometric data change over time). It also has a faster testing time than recurrent networks (but slower training time) so it's perfect for low power edge computing. (trade-off between precision and speed) Another point is that we can use entirely different optimization solvers (instead of gradient descent for example), here differential equation solvers, for which there's a hundred plus years of theory behind that has not been used yet for neural networks. Lastly, there's a constant memory cost, instead of linearly increasing the cost for each layers in a regular neural network. 
 
-The thing about neural network is that with these discrete layers, they expect the intervals for these time series data sets to be fixed (like everyday, every hour, every second). But that's not how the real world operates. Neural networks are bad at predicting output for time series data that is irregular (like in hospitals, doctors don't test a patient's biometric data at fixes time intervals). 
 
-\textbf{Regarder le fonctionnement de la descente de gradient dans le cas où il y a plusieurs hidden layers !}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \end{document}
