@@ -23,12 +23,12 @@
  
 \section{Ordinary Differential Equations}
 
-\subsection{A refresher on ODE}
+\subsection{A reminder on ODE}
 
 An ODE is a function that describes the changes of a function, $u$, through time. In this setting, time is a continuous variable and we don't know the real function, only its derivative.
 
 \begin{definition}
-Let $f: \Omega \subseteq \mathbb{R} x \mathbb{R}^N \rightarrow \mathbb{R}^N$. 
+Let $f: \Omega \subseteq \mathbb{R} \times \mathbb{R}^N \rightarrow \mathbb{R}^N$. 
 
 A \textit{first order ODE} takes of the form:
 \[
@@ -95,15 +95,27 @@ where
 
 \section{Neural networks}
 
-In a typical machine learning problem, you are given some input $x$ and you want to predict an output $y$. A \textit{neural network} can be used to solve such a problem. It consists of a series of layers. These layers are matrix operations. The first layer takes an input and the result of the computation on that input is given to the hidden layers. An hidden layer takes an input from the previous layer and compute an output for the next. The last layer returns the final output, the prediction. 
+In a typical machine learning problem, you are given some input $x$ and you want to predict an output $y$. A \textit{neural network} can be used to solve such a problem. It consists of a series of layers. There are three types of layers :
 
-We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. 
+\begin{itemize}
+\item The \textit{input} layer
+\item The \textit{output} layer
+\item The \textit{hidden} layers
+\end{itemize}
 
-\includegraphics[scale=0.7]{nn.png}
+Each layer consist of a certain number of neurons. We give an input to the neurons of a layer, they do some calculus (non-linear activation function for example) and they give an output. Therefore, layers can be seen has matrix operations. 
 
-Each layer introduces a little bit of error that propagate through the network. 
+The neurons of a layer are connected to the neurons of the next layer. Thanks to these connections, the output given by a neuron can be transmitted over the neural network. We begin by giving an input to the input layer, which transmits information to the first hidden layer (There isn't always an hidden layer in a neural network. In this case, the input layer is directly connected to the output layer). In turn, it transmit information to the next hidden layer and so on, until the output layer which give us the final output, the prediction. 
 
-\subsection{Example}
+With a loss function, we can then determined the accuracy of the neural network and make it more accurate by changing the parameters. 
+
+We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. Each layer introduces a little bit of error that propagate through the network.
+
+\begin{center}
+\includegraphics[scale=0.55]{nn.png}
+\end{center}  
+
+\subsection{Example} \label{2.1}
 
 Let's consider a neural network, with one hidden layer, that takes a 2-dimensional input $x = (x_1, x_2)$, and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
 
@@ -122,9 +134,11 @@ where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the networ
 
 \subsection{Back propagation}
 
-\section{Residual neural network theory}
+\section{Residual neural network} \label{rnn}
 
-Residual networks have the best accuracy. The only change to a regular neural network is that we not only feed the output of the previous layer to the next, but also the input of that layer. It creates skip connections, so that the network can decide how deep it needs to be. As a formula, the $k+1$th layer has the formula:
+A \textit{residual neural network} is simply a regular network except that they have more connections. Indeed, not only do we feed the output of the previous layer to the next, but also the input of that layer. Thanks to that, residual networks have a better accuracy. 
+
+In these networks, the $k+1$th layer has the formula:
 \[
 x_{k+1} = x_k + F(x_k)
 \]
@@ -132,27 +146,106 @@ where $F$ is the function of the $k$th layer and its activation. This simple for
 \[
 x_{k+1} = x_k + h.F(x_k),
 \]
-which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can introduce neural ODE.
+which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can later introduce neural ODE.
+
+\section{Implicit Layers}
+
+There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{2.1}. 
+
+However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we should define them implicitly. In this case, we specify the condition we want the layer's output to satisfy. 
+
+In other words, lets assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. Then we define the explicit layers by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$ such as $y = f(x)$ for some $x \in \mathcal{X}$. But we define an implicit layer by giving the condition that the function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy (for example we can search for a $y$ such that $g(x,y) = 0$).
+
+A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
+$$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
+
+\textbf{À retravailler !!!}
+
+\subsection{Implicit function theorem}
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
+
+We denote the derivative of $f$ evaluated at a point $x \in \mathbb{R}^n$ as :
+
+\[ \partial f : \mathbb{R}^n \rightarrow \mathbb{R}^m \]
+
+We can write the first-order Taylor's development for $f$ at $x$ as :
+
+\[ f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2) \]
+
+
+where $a \in \mathbb{R}^n$ is a vector.
+
+We also use the following notation :
+
+\[ \partial_0 f(x,y) = \frac{\partial f(x,y)}{\partial x}  \]
+\[ \partial_1 f(x,y) = \frac{\partial f(x,y)}{\partial y}  \]
+
+\begin{theorem}{\textbf{The implicit function theorem}}
+
+Let $f: \mathbb{R}^p \times \mathbb{R}^n \rightarrow \mathbb{R}^n$ be a function and $a_0 \in \mathbb{R}^p , z_0 \in \mathbb{R}^n$ two vectors such that :
+
+\begin{enumerate}
+\item $f(a_0,z_0) = 0$;
+\item $f$ is continuously differentiable with a non-singular Jacobian, i.e. its determinant is non zero, $\partial_1 f(a_0,z_0) \in \mathbb{R}^{n \times n}$.
+\end{enumerate}
+Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \mathbb{R}^n$ containing $a_0$ and $z_0$, respectively, and a unique continuous function $z*:S_{a_0} \rightarrow S_{z_0}$ such that:
+\begin{itemize}
+\item $z_0=z^*(a_0)$,
+\item $ \forall a \in S_{a_0}, f(a,z^*(a))=0$,
+\item $z^*$ is differentiable on $S_{a_0}$.
+\end{itemize}
+\end{theorem}
 
 
 \section{Neural ODE}
 
-\subsection{Introduction}
+\subsection{Définition}
 
-(In this case, the initial condition for the system is "time" $0$, which indicates the very first layer of the neural network, and as $x(0)$ will serve the normal input. The final condition at "time" $t$ will be the desired output of the neural network: a scalar value, a vector representing classes or anything else.
-These residuals connections are discretised time steps of the Euler method, it means that we can regulate the depth of the neural network, just with choosing the discretising scheme, hence, making the solution (aka the neural network) more or less accurate, even making it infinite-layer like. )
+(Here, let's consider a neural network as a continuous function with no grouping, no blocks.   We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. )
 
-\includegraphics[scale=1]{resnetvsodenet.png}
+In a residual neural network, the output for input $x$ is a function $F(x, \Theta)$ where $\Theta$ represents the parameters of each layer. 
 
+But we want to extract all these individual layers and only have one "shared" layer.
 
+\textbf{insérer des dessins!!!}
 
-\subsection{definition?}
+Any output of the layer of a residual network can be computed in the ODE network with the function:
+$$F(z_t, t, \Theta)$$
+with $t$ being the number of that layer of the network minus one.
+
+In the figure ?, the output of the $k$th layer is:
+$$z_k = f(z_{k-1}, k-1) + z_{k-1} = F(z_{k-1}, k-1, \Theta).$$
+We can then view $z$ as a function of $t$. For example,
+$$z(1) = f(x, 0) + x.$$
+
+We can also write $F$ as a continuous function of $t$, so that $F$ is no longer a function of $z$. However, we need to give it the initial value of $z$, which is $z(0) = x$ (the input).
+
+Let's now consider that the value given by $F(z(t), t, \Theta)$ is the derivative of $z(t)$. Thus, instead of doing $z(t) = F(z(t), t, \Theta)$, we put the model on the derivative, $z'(x) = F(z(t), t, \Theta)$.  We obtain the following ODE:
+$$ \partial_t z(t) = F(z(t), t, \Theta) $$
+where the initial condition for "time" $0$ is $z(0) = x$. 
+
+To get the output we will have to solve this ODE.
+
+The final condition at a certain "time" (the number of layers) will be the desired output of the neural network.
+
 
 \subsection{Forward pass}
 
-\subsection{Adjoint method}
+With the above, we have that the output of the residual neural network is given by
+$$ F(z(n), n, \Theta) $$
+where $n$ is the number of layers. 
+In the ODE neural network, instead of having multiple individual layers, the entire network is one continuous block of computation. This means that we do not need to specify the number of layers beforehand.
+
+We observe that in this case, the layer is defined implicitly by the ODE with initial condition:
+$$ \partial_t z(t) = F(z(t), t, \Theta). $$
+
+But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver, like Euler method or Runge-Kutta for example. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in section \ref{rnn}.
+
+\textbf{ici du code !!!}
  
-\subsection{Backwward pass}
+\subsection{Backward pass: the Adjoint method}
+
+
 
 \subsection{Advantages and disadvantages  }
 
@@ -162,93 +255,21 @@ In regular neural networks, we consider discrete, individual and independent lay
 \item They have a faster testing time than regular networks, but a slower training time. Thus it's perfect for low power edge computing. There is a trade-off between precision and speed.
 \item We can use ordinary differential equations solvers instead of gradient descent. These solvers have a hundred plus years of theory behind them.
 \item Lastly, there's a constant memory cost, instead of increasing the cost linearly with each layer in a regular network.
+\item Regular neural networks can be evaluated with a fixed amount of computation, and are typically faster to train. In this case, we don't have to choose an error tolerance for a solver.
 \end{itemize}
 
 
 
 
-
-
-
+\begin{center}
+\includegraphics[scale=0.7]{resnetvsodenet.png}
+\end{center}
 
 \textbf{voir def vector field}
 
 \textbf{voir probleme du vanishing gradient dans les nn regulier}
 
 \textbf{ recherche the Universal Approximation Theorem states that, for enough layers or enough parameters, $ML(x)$ can approximate any nonlinear function sufficiently close (subject to some constraints).}
-
-
-
-
-
-
-
-% https://julialang.org/blog/2019/01/fluxdiffeq/
-
-This generation of a prediction $y$ from $x$ is a machine learning model ($ML$). During training, we attempt to adjust the parameters of $ML$ so that it generates accurate predictions. $y = ML(x)$. The reason $ML$ is interesting is because its form is basic but adapts to the data itself. The theory and practice of machine learning confirms that this is a good way to learn nonlinearities.  For example, 
-
-
-
-Instead of learning the nonlinear transformation directly, we wish to learn the structures of the nonlinear transformation. Thus, instead of doing $y = ML(x)$, we put the machine learning model on the derivative, $y'(x) = ML(x)$, and now we solve the ODE. Why do this? One motivation is that defining the model in this way and then solving the ODE using the simplest and most error prone method, the Euler method, what we get is equivalent to a residual neural network. Rather than adding more layers, we can just model the differential equation directly and then solve it using a purpose-built ODE solver. 
-
-\textbf{Let's put an ODE into a neural net framework!}
-
-To understand embedding an ODE into a neural network, let's look at what a neural network layer actually is. A layer is really just a differentiable function which takes in a vector of size $n$ and spits out a new vector of size $m$. 
-Turns out that differential equations solvers fit this framework, too: a solve takes in some vector $p$ (which might include parameters like the initial starting point), and outputs some new vectors, the solution. Moreover it's differentiable, which means we can put it straight into a larger differentiable program. This larger program can happily include neural networks, and we can keep using standard optimisation techniques like ADAM to optimise their weights.
-
-% https://stats.stackexchange.com/questions/445562/what-are-the-practical-uses-of-neural-odes
-
-For time series and density modelling, neural ODEs offer some benefits that we don't know how to get otherwise. For plain supervised learning, there are potential computational benefits, but for practical purposes they probably aren't worth using yet in that setting.
-
-Neural ODEs differ in two ways from standard nets:
-
-\begin{enumerate}
-\item They represent a different set of functions, which can be good or bad depending on what you're modelling.
-\item We have to approximate their exact solution, which gives more freedom in how to compute the answer, but adds complexity.
-\end{enumerate}
-
-The clearest setting where neural ODEs help is building continuous-time series models, which can easily handle data coming at irregular intervals. However, ODEs can only model deterministic dynamics. 
-
-Conventional nets can be evaluated exactly with a fixed amount of computation, and are typically faster to train. Plus, with standard nets you don't have to choose an error tolerance for a solver.
-
-
-
-
-
-
-
-
-
-
-
-(Here, let's consider a neural network as a continuous function with no grouping, no blocks. Instead of having single layers, we have the entire network be one continuous block of computation. This means that we do not need to specify the number of layers beforehand. We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 \end{document}
