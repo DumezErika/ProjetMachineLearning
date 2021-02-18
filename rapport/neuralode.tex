@@ -1,6 +1,6 @@
 \documentclass[10pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[francais]{babel}
+\usepackage[french]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -12,7 +12,7 @@
 
 \theoremstyle{definition}
 \newtheorem{definition}{Définition}
-\theoremstyle{theorem}
+\theoremstyle{definition}
 \newtheorem{theorem}{Théorème}
 
 \author{Della Bona Sarah, Dumez Erika}
@@ -107,7 +107,7 @@ Each layer consist of a certain number of neurons. We give an input to the neuro
 
 The neurons of a layer are connected to the neurons of the next layer. Thanks to these connections, the output given by a neuron can be transmitted over the neural network. We begin by giving an input to the input layer, which transmits information to the first hidden layer (There isn't always an hidden layer in a neural network. In this case, the input layer is directly connected to the output layer). In turn, it transmit information to the next hidden layer and so on, until the output layer which give us the final output, the prediction. 
 
-With a loss function, we can then determined the accuracy of the neural network and make it more accurate by changing the parameters. 
+With a loss function, we can then determined the accuracy of the neural network and make it more accurate by changing the parameters. We are trying to find the optimal parameters which minimize this loss function. In order to do that, we use gradient descent.
 
 We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. Each layer introduces a little bit of error that propagate through the network.
 
@@ -242,12 +242,28 @@ $$ \partial_t z(t) = F(z(t), t, \Theta). $$
 But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver, like Euler method or Runge-Kutta for example. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in section \ref{rnn}.
 
 \textbf{ici du code !!!}
- 
+
+
 \subsection{Backward pass: the Adjoint method}
+Now that we know how to calculate the output from the input and the parameter $\theta$, we need a method to find the optimal $\theta$ that minimize the loss function.
 
+In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the adjoint method. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
 
+Let $L$ be a loss function.
 
-\subsection{Advantages and disadvantages  }
+Then the error for an input $z(t_0)$ is given by :
+$$
+L(z(t_1)) = L(z(t_0) + \int_{t_0}^{t_1} f(z(t),t,\theta) dt ) = L(ODESolve(z(t_0),f,t_0,t_1,\theta))
+$$
+% car f(..) = d(z) et z(1) = z(0) + z(1) - z(0)
+
+To optimise $L$, we need gradients with respect to $\theta$. We have :
+$$
+\
+$$
+%41 -> serie de taylor de la fct g : eps -> z(t+esp) en 0
+
+\subsection{Advantages and disadvantages}
 
 In regular neural networks, we consider discrete, individual and independent layers. They are just a block of operations and the neural network consists of those blocks. However, ODE network can be seen as continuous functions. Instead of having separate layers, the entire network is one continuous block of computation. This leads to many advantages but also some disadvantage:
 \begin{itemize}
