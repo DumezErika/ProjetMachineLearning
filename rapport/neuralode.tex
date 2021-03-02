@@ -5,8 +5,10 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
-\usepackage{graphicx}
 \usepackage{amsthm}
+\usepackage{bbold}
+
+\usepackage{graphicx}
 \usepackage{systeme}
 \usepackage{stmaryrd}
 
@@ -19,7 +21,6 @@
 \title{Introduction to neural ODE}
 \begin{document}
 \maketitle
- 
  
 \section{Ordinary Differential Equations}
 
@@ -75,7 +76,7 @@ where
 
 It is not always possible to explicitly find a solution to a Cauchy problem, but we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution. 
 
-More precisely, let $T \in \mathbb{R}\\\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ s.t. 
+More precisely, let $T \in \mathbb{R}\backslash\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ s.t. 
 \[
 u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
 \]
@@ -159,7 +160,7 @@ In other words, lets assume that we have an input space $\mathcal{X}$ and an out
 A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
 $$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
 
-\textbf{À retravailler !!!}
+%TODO À retravailler !!!
 
 \subsection{Implicit function theorem}
 Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
@@ -201,13 +202,13 @@ Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \
 
 \subsection{Définition}
 
-(Here, let's consider a neural network as a continuous function with no grouping, no blocks.   We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. )
+%(Here, let's consider a neural network as a continuous function with no grouping, no blocks.   We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. )
 
 In a residual neural network, the output for input $x$ is a function $F(x, \Theta)$ where $\Theta$ represents the parameters of each layer. 
 
 But we want to extract all these individual layers and only have one "shared" layer.
 
-\textbf{insérer des dessins!!!}
+%TODO textbf{insérer des dessins!!!}
 
 Any output of the layer of a residual network can be computed in the ODE network with the function:
 $$F(z_t, t, \Theta)$$
@@ -241,7 +242,7 @@ $$ \partial_t z(t) = F(z(t), t, \Theta). $$
 
 But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver, like Euler method or Runge-Kutta for example. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in section \ref{rnn}.
 
-\textbf{ici du code !!!}
+%TODO ici du code !!!
 
 
 \subsection{Backward pass: the Adjoint method}
@@ -249,19 +250,72 @@ Now that we know how to calculate the output from the input and the parameter $\
 
 In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the adjoint method. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
 
-Let $L$ be a loss function.
-
-Then the error for an input $z(t_0)$ is given by :
+Let $L$ be a loss function. Then the error for an input $z(t_0)$ is given by :
 $$
-L(z(t_1)) = L(z(t_0) + \int_{t_0}^{t_1} f(z(t),t,\theta) dt ) = L(ODESolve(z(t_0),f,t_0,t_1,\theta))
+L(z(t_1)) = L \big( z(t_0) + \int_{t_0}^{t_1} f(z(t),t,\theta) dt \big) = L(ODESolve(z(t_0),f,t_0,t_1,\theta))
 $$
 % car f(..) = d(z) et z(1) = z(0) + z(1) - z(0)
 
-To optimise $L$, we need gradients with respect to $\theta$. We have :
+To minimize the loss function $L$, we need gradients with respect to $\theta$. To achieve that, we first need to determine $\frac{\partial L}{\partial z(t)}$ at each instant. This quantity is called the \textit{adjoint} and is noted $a(t)$. We would like to determine its dynamics. So we will have to compute its derivative with respect to $t$. In this calculus, we will see the vectors as row vectors.
+
+With a continuous hidden state, we can write the transformation after an $\varepsilon$ change in time as :
 $$
-\
+z(t+\varepsilon) = \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)
 $$
-%41 -> serie de taylor de la fct g : eps -> z(t+esp) en 0
+Let's pose $ G : \varepsilon \mapsto \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)$.
+
+We can apply the Chain rule and we have :
+$$
+\frac{\partial L}{\partial z(t)} = \frac{\partial L}{\partial z(t+\varepsilon)} \frac{\partial z(t+\varepsilon)}{\partial z(t)}
+$$
+In other words :
+$$
+a(t) = a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)} \text{   (1)}
+$$
+
+We have :
+\begin{align*}
+\frac{\partial a(t)}{\partial t} &= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t)}{\varepsilon} \text{ by définition.}\\
+&= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}}{\varepsilon} \text{ by (1).}\\
+&= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial z(t) + \varepsilon f(z(t),t,\theta) + \mathcal{O}(\varepsilon^2)}{\partial z(t)}}{\varepsilon} \text{ by Taylor's development of G in 0.} \\
+&= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)(\mathbb{1} + \varepsilon \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon^2))}{\varepsilon}\\
+&= \lim_{\varepsilon \rightarrow 0^+} \frac{-\varepsilon a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon^2)}{\varepsilon}\\
+&= \lim_{\varepsilon \rightarrow 0^+} - a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon)\\
+&= -a(t)\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
+\end{align*}
+%TODO regarder d'où sort la transposée
+ 
+We need to solve ODE for the adjoint backwards in time. The constraint on the last time point, which is simply the gradient of the loss with respect to this point, has to be specified:
+$$
+a(t_N) = \frac{\partial L}{\partial z(t_N)}
+$$
+Then, the gradients with respect to the hidden state can be calculated at any time, including the initial value:
+\begin{align*}
+a(t_0) &= a(t_N) + \int^{t_0}_{t_N} \frac{\partial a(t)}{\partial t} dt\\
+&= a(t_N) - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)} dt
+\end{align*}
+Hence, the dynamics of the adjoint are given by another ODE:
+$$
+\frac{\partial a(t)}{\partial t} = -a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)}
+$$
+
+Therefore, we can compute $\frac{\partial L}{\partial z(t_0)}$ by an other call to an ODE solver. This solver must run backwards, starting from the initial value of $\frac{\partial L}{\partial z(t_N)}$. Thus, we need to know to value of $z(t)$ at any time to solve this ODE. To know those values, we can simply recompute $z(t)$ backwards in time together with the adjoint, starting from its final value $z(t_N)$.
+
+If we want to compute the gradients with respect to the parameters $\theta$, we have to evaluate a third integral, which depends on both $z(t)$ and $a(t)$:
+$$
+\frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt
+$$
+
+% The vector-Jacobian products $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)}$ and $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta}$ can be efficiently evaluated by automatic differentiation, at a time cost similar to that of evaluating $f$. All integrals for solving $z, a$ and $\frac{\partial L}{\partial \theta}$ can be computed in a single call to an ODE solver, which concatenates the original state, the adjoint, and the other partial derivatives into a single vector.
+
+Here we assumed that loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
+
+In practice, most ODE solvers have the option to output the state $z(t)$ at multiple times. When the loss depends on these intermediate states, the reverse-mode derivative must be broken into a sequence of separate solves, one between each consecutive pair of output times. At each observation, the adjoint must be adjusted in the direction of the corresponding partial derivative $\frac{\partial L}{\partial z(t_i}$.
+
+%TODO ici du code aussi
+
+ 
+
 
 \subsection{Advantages and disadvantages}
 
