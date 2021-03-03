@@ -248,7 +248,7 @@ But how do we find the solution to this ODE, i.e. the output? We can simply use 
 \subsection{Backward pass: the Adjoint method}
 Now that we know how to calculate the output from the input and the parameter $\theta$, we need a method to find the optimal $\theta$ that minimize the loss function.
 
-In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the adjoint method. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
+In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the \textit{adjoint method}. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
 
 Let $L$ be a loss function. Then the error for an input $z(t_0)$ is given by :
 $$
@@ -256,13 +256,13 @@ L(z(t_1)) = L \big( z(t_0) + \int_{t_0}^{t_1} f(z(t),t,\theta) dt \big) = L(ODES
 $$
 % car f(..) = d(z) et z(1) = z(0) + z(1) - z(0)
 
-To minimize the loss function $L$, we need gradients with respect to $\theta$. To achieve that, we first need to determine $\frac{\partial L}{\partial z(t)}$ at each instant. This quantity is called the \textit{adjoint} and is noted $a(t)$. We would like to determine its dynamics. So we will have to compute its derivative with respect to $t$. In this calculus, we will see the vectors as row vectors.
+To minimize the loss function $L$, we need gradients with respect to $\theta$. To achieve that, we first need to determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is $\frac{\partial L}{\partial z(t)}$. This quantity is called the \textit{adjoint} and is noted $a(t)$. We would like to determine its dynamics, so we need to compute its derivative with respect to $t$. \footnote{Here we see the vectors as row vectors.}
 
 With a continuous hidden state, we can write the transformation after an $\varepsilon$ change in time as :
 $$
 z(t+\varepsilon) = \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)
 $$
-Let's pose $ G : \varepsilon \mapsto \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)$.
+Let $ G : \varepsilon \mapsto \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)$.
 
 We can apply the Chain rule and we have :
 $$
@@ -285,7 +285,7 @@ We have :
 \end{align*}
 %TODO regarder d'où sort la transposée
  
-We need to solve ODE for the adjoint backwards in time. The constraint on the last time point, which is simply the gradient of the loss with respect to this point, has to be specified:
+We need to solve an ODE for the adjoint backwards in time. The constraint on the last time point, which is simply the gradient of the loss with respect to this point, has to be specified:
 $$
 a(t_N) = \frac{\partial L}{\partial z(t_N)}
 $$
@@ -296,21 +296,60 @@ a(t_0) &= a(t_N) + \int^{t_0}_{t_N} \frac{\partial a(t)}{\partial t} dt\\
 \end{align*}
 Hence, the dynamics of the adjoint are given by another ODE:
 $$
-\frac{\partial a(t)}{\partial t} = -a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)}
+\frac{\partial a(t)}{\partial t} = -a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)} \text{ (2)}
 $$
-
-Therefore, we can compute $\frac{\partial L}{\partial z(t_0)}$ by an other call to an ODE solver. This solver must run backwards, starting from the initial value of $\frac{\partial L}{\partial z(t_N)}$. Thus, we need to know to value of $z(t)$ at any time to solve this ODE. To know those values, we can simply recompute $z(t)$ backwards in time together with the adjoint, starting from its final value $z(t_N)$.
 
 If we want to compute the gradients with respect to the parameters $\theta$, we have to evaluate a third integral, which depends on both $z(t)$ and $a(t)$:
 $$
 \frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt
 $$
 
+To avoid computing each ODE on its own, we can do all of them at the same time. To do that we can generalize the ODE to:
+$$
+\frac{\partial}{\partial t} \begin{bmatrix}
+							z \\ \theta \\ t
+							\end{bmatrix} (t) 
+= f_{aug}([z,\theta ,t]) := \begin{bmatrix}
+							f([z,\theta ,t]) \\ 0 \\ 1
+							\end{bmatrix},
+$$
+
+$$
+a_{aug} := \begin{bmatrix}
+			a \\ a_{\theta} \\ a_t
+			\end{bmatrix}, \ 
+a(t) = \frac{\partial L}{\partial z(t)}, \ 
+a_\theta (t) = \frac{\partial L}{\partial \theta (t)}, \ 
+a_t(t) := \frac{\partial L}{\partial t(t)}.
+$$
+
+The jacobian of $f$ has the form:
+
+$$
+\frac{\partial f_{aug}}{\partial [z,\theta,t]} = \begin{bmatrix}
+\frac{\partial f}{\partial z} & \frac{\partial f}{\partial \theta} & \frac{\partial f}{\partial t} \\
+\textbf{0} & \textbf{0} & \textbf{0} \\
+\textbf{0} & \textbf{0} & \textbf{0}
+\end{bmatrix}(t)
+$$
+where each \textbf{0} is a matrix of zeros with the corresponding dimensions.
+
+We can use $a_{aug}$ in (2) and we get:
+\begin{align*}
+\frac{\partial a_{aug}(t)}{\partial t} 
+&= - [a(t) \ a_\theta (t) \ a_t (t)]\frac{\partial f_{aug}}{\partial [ z,\theta , t]}(t) \\
+&= -\Big[a\frac{\partial f}{\partial z} \ a\frac{\partial f}{\partial \theta} \ a\frac{\partial  f}{\partial t}\Big] (t)
+\end{align*}
+
+%(52) la dérivée de L selon t_N c'est la chain rule avec z(t_N), la deuxième c'est avec l'intégrale 
+
+
+
 % The vector-Jacobian products $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)}$ and $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta}$ can be efficiently evaluated by automatic differentiation, at a time cost similar to that of evaluating $f$. All integrals for solving $z, a$ and $\frac{\partial L}{\partial \theta}$ can be computed in a single call to an ODE solver, which concatenates the original state, the adjoint, and the other partial derivatives into a single vector.
 
 Here we assumed that loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
 
-In practice, most ODE solvers have the option to output the state $z(t)$ at multiple times. When the loss depends on these intermediate states, the reverse-mode derivative must be broken into a sequence of separate solves, one between each consecutive pair of output times. At each observation, the adjoint must be adjusted in the direction of the corresponding partial derivative $\frac{\partial L}{\partial z(t_i}$.
+In practice, most ODE solvers have the option to output the state $z(t)$ at multiple times. When the loss depends on these intermediate states, the reverse-mode derivative must be broken into a sequence of separate solves, one between each consecutive pair of output times. At each observation, the adjoint must be adjusted in the direction of the corresponding partial derivative $\frac{\partial L}{\partial z(t_i)}$.
 
 %TODO ici du code aussi
 
