@@ -21,6 +21,7 @@
 \title{Introduction to neural ODE}
 \begin{document}
 \maketitle
+\tableofcontents
  
 \section{Ordinary Differential Equations}
 
@@ -39,16 +40,16 @@ A \textit{first order ODE} takes of the form:
 \begin{itemize}
 \item A \textit{solution} for (1) is a function $u : I \rightarrow \mathbb{R}^N$ where $I$ is an interval of $\mathbb{R}$ such that:
 	\begin{itemize}
-	\item u is derivable on I,
-	\item $\forall t \in I, f(t, u(t)) \in \Omega$,
-	\item $\forall t \in I, \partial_t u(t) = f(t, u(t))$
+	\item[•] u is derivable on I,
+	\item[•] $\forall t \in I, f(t, u(t)) \in \Omega$,
+	\item[•] $\forall t \in I, \partial_t u(t) = f(t, u(t))$
 	\end{itemize}
 \item An \textit{initial condition} (IC) is a condition of the type:
 \[
 u(t_0) = u_0
 \]
 where $(t_0, u_0) \in \Omega$ is fixed.
-\end{itemize}
+
 \item A \textit{Cauchy problem} is an ODE with IC
 \[
 \left \{
@@ -58,6 +59,7 @@ u(t_0) & = & u_0
 \end{array}
 \right.
 \]
+\end{itemize}
 \end{definition}
 
 \begin{definition}
@@ -74,6 +76,16 @@ where
    \end{eqnarray}
 \end{definition}
 
+\subsection{A simple example}
+Let $\partial_t x(t) = x(t)$ with initial condition $x(0) = 1$ be a Cauchy problem. The solutions of the ODE without the initial condition are given by : 
+$$
+a . e^t \text{ where } a\in \mathbb{R}.
+$$
+
+But here, we have an initial condition to satisfy. So $a = 1$ and the solution of the Cauchy problem is $e^t$.
+
+
+\subsection{Euler's method}
 It is not always possible to explicitly find a solution to a Cauchy problem, but we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution. 
 
 More precisely, let $T \in \mathbb{R}\backslash\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ s.t. 
@@ -82,8 +94,6 @@ u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
 \]
 
 Let $h_i := t_{i+1} - t_i$, it is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Euler's method.
-
-\subsection{Euler's method}
 
 Euler's method is similar to a Taylor development, the idea is to compute $u(t_{i+1})$ using the following formula:\footnote{We consider that $ \forall i\ \{0,...,n\}, h_i = h$.}
 \[
@@ -135,6 +145,22 @@ where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the networ
 
 \subsection{Back propagation}
 
+By backpropagating, we want to determine the differential of the loss function with respect to the parameters in order to minimize this loss function.
+
+We have:
+\begin{align*}
+\frac{\partial \mathcal{L}}{\partial \mathcal{L}} &= 1 \\
+\frac{\partial \mathcal{L}}{\partial y_k} &= \frac{\partial \mathcal{L}}{\partial \mathcal{L}} . (y_k - t_k) \\
+\frac{\partial \mathcal{L}}{\partial w_{ki}^{(2)}} &= \frac{\partial \mathcal{L}}{\partial y_k} . h_i \\
+\frac{\partial \mathcal{L}}{\partial b_k^{(2)}} &= \frac{\partial \mathcal{L}}{\partial y_k} \\
+\frac{\partial \mathcal{L}}{\partial h_i} &= \sum_{k = 1}^2 \frac{\partial \mathcal{L}}{\partial y_k} . w_{ki}^{(2)} \\
+\frac{\partial \mathcal{L}}{\partial z_i} &= \frac{\partial \mathcal{L}}{\partial h_i} \sigma '(z_i) \\
+\frac{\partial \mathcal{L}}{\partial w_{ij}^{(1)}} &= \frac{\partial \mathcal{L}}{\partial z_i} . x_j \\
+\frac{\partial \mathcal{L}}{\partial b_i^{(1)}} &= \frac{\partial \mathcal{L}}{\partial z_i} \\
+\end{align*}
+
+%TODO ajouter computation graph + methode vectorielle ?
+
 \section{Residual neural network} \label{rnn}
 
 A \textit{residual neural network} is simply a regular network except that they have more connections. Indeed, not only do we feed the output of the previous layer to the next, but also the input of that layer. Thanks to that, residual networks have a better accuracy. 
@@ -149,6 +175,8 @@ x_{k+1} = x_k + h.F(x_k),
 \]
 which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can later introduce neural ODE.
 
+%TODO voir probleme du vanishing gradient dans les nn regulier
+
 \section{Implicit Layers}
 
 There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{2.1}. 
@@ -160,9 +188,13 @@ In other words, lets assume that we have an input space $\mathcal{X}$ and an out
 A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
 $$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
 
+Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the following theorem can be used. It indicates that if the function $f$ is sufficiently regular in the neighborhood of a point of the curve, there exists a function $\varphi$ at least as regular as $f$ such that locally, the curve and the graph of the function $\varphi$ are confused.
 %TODO À retravailler !!!
 
 \subsection{Implicit function theorem}
+
+%TODO all the math can be derived using the implicit function theorem but we used a simpler derivation based on resnet}
+
 Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
 
 We denote the derivative of $f$ evaluated at a point $x \in \mathbb{R}^n$ as :
@@ -202,7 +234,12 @@ Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \
 
 \subsection{Définition}
 
-%(Here, let's consider a neural network as a continuous function with no grouping, no blocks.   We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. )
+%Here, let's consider a neural network as a continuous function with no grouping, no blocks. We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. 
+
+%TODO recherche the Universal Approximation Theorem states that, for enough layers or enough parameters, $ML(x)$ can approximate any nonlinear function sufficiently close (subject to some constraints).
+
+
+%TODO voir def vector field
 
 In a residual neural network, the output for input $x$ is a function $F(x, \Theta)$ where $\Theta$ represents the parameters of each layer. 
 
@@ -231,6 +268,8 @@ The final condition at a certain "time" (the number of layers) will be the desir
 
 
 \subsection{Forward pass}
+
+%TODO dire que y = solution odesolver est unique et existe toujours du moment que f est lipschitzienne et continument différentiable partout (ex: pas relu mais tanh)
 
 With the above, we have that the output of the residual neural network is given by
 $$ F(z(n), n, \Theta) $$
@@ -341,13 +380,23 @@ We can use $a_{aug}$ in (2) and we get:
 &= -\Big[a\frac{\partial f}{\partial z} \ a\frac{\partial f}{\partial \theta} \ a\frac{\partial  f}{\partial t}\Big] (t)
 \end{align*}
 
-%(52) la dérivée de L selon t_N c'est la chain rule avec z(t_N), la deuxième c'est avec l'intégrale 
+We can see that the first element is the adjoint differential equation that we calculated previously. The total gradient with respect to the parameters is given by integrating the second element over the full interval and by setting $a_\theta (t_N) = \textbf{0}$. We obtain :
+$$
+\frac{\partial L}{\partial \theta} = a_\theta (t_0) = - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial \theta} dt
+$$
+%sans a(tn) = 0 , on a a(tn) - integrale non ?
 
+We can also get gradients with respect to $t_0$ and $t_N$ by integrating the last element and by the Chain rule respectively.
+\begin{align*}
+\frac{\partial L}{\partial t_0} &= a_t(t_0) = a_t(t_N) - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial t} dt \\
+\frac{\partial L}{\partial t_N} &= \frac{\partial L}{\partial z(t_N)} \frac{\partial z(t_N)}{\partial t_N} = a(t_N)f(z(t_N),t_N,\theta)
+\end{align*}
+With this generalized method, we have gradients for all possible inputs to a Cauchy problem solver.
 
 
 % The vector-Jacobian products $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)}$ and $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta}$ can be efficiently evaluated by automatic differentiation, at a time cost similar to that of evaluating $f$. All integrals for solving $z, a$ and $\frac{\partial L}{\partial \theta}$ can be computed in a single call to an ODE solver, which concatenates the original state, the adjoint, and the other partial derivatives into a single vector.
 
-Here we assumed that loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
+In the development above, we assumed that the loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
 
 In practice, most ODE solvers have the option to output the state $z(t)$ at multiple times. When the loss depends on these intermediate states, the reverse-mode derivative must be broken into a sequence of separate solves, one between each consecutive pair of output times. At each observation, the adjoint must be adjusted in the direction of the corresponding partial derivative $\frac{\partial L}{\partial z(t_i)}$.
 
@@ -367,18 +416,12 @@ In regular neural networks, we consider discrete, individual and independent lay
 \item Regular neural networks can be evaluated with a fixed amount of computation, and are typically faster to train. In this case, we don't have to choose an error tolerance for a solver.
 \end{itemize}
 
-
-
-
 \begin{center}
 \includegraphics[scale=0.7]{resnetvsodenet.png}
 \end{center}
 
-\textbf{voir def vector field}
 
-\textbf{voir probleme du vanishing gradient dans les nn regulier}
-
-\textbf{ recherche the Universal Approximation Theorem states that, for enough layers or enough parameters, $ML(x)$ can approximate any nonlinear function sufficiently close (subject to some constraints).}
+%TODO dire que resnet peut calculer par exemple $y=x^2$ mais pas ode net qui lui ne peut apprendre que des transformations bijectives : lien avec les conditions pour avoir une solution à une ode?
 
 
 \end{document}
