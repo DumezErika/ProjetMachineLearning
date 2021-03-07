@@ -21,7 +21,7 @@
 \title{Introduction to neural ODE}
 \begin{document}
 \maketitle
-\tableofcontents
+%\tableofcontents
  
 \section{Ordinary Differential Equations}
 
@@ -77,12 +77,12 @@ where
 \end{definition}
 
 \subsection{A simple example}
-Let $\partial_t x(t) = x(t)$ with initial condition $x(0) = 1$ be a Cauchy problem. The solutions of the ODE without the initial condition are given by : 
+Let $\partial_t x(t) = x(t)$ an ODE. The solutions of the ODE are given by : 
 $$
 a . e^t \text{ where } a\in \mathbb{R}.
 $$
 
-But here, we have an initial condition to satisfy. So $a = 1$ and the solution of the Cauchy problem is $e^t$.
+If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solution is $e^t$.
 
 
 \subsection{Euler's method}
@@ -93,7 +93,7 @@ More precisely, let $T \in \mathbb{R}\backslash\{0\}$ such that the solution $u$
 u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
 \]
 
-Let $h_i := t_{i+1} - t_i$, it is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Euler's method.
+Let $h_i := t_{i+1} - t_i$, which is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Euler's method.
 
 Euler's method is similar to a Taylor development, the idea is to compute $u(t_{i+1})$ using the following formula:\footnote{We consider that $ \forall i\ \{0,...,n\}, h_i = h$.}
 \[
@@ -114,13 +114,15 @@ In a typical machine learning problem, you are given some input $x$ and you want
 \item The \textit{hidden} layers
 \end{itemize}
 
-Each layer consist of a certain number of neurons. We give an input to the neurons of a layer, they do some calculus (non-linear activation function for example) and they give an output. Therefore, layers can be seen has matrix operations. 
+Each layer consist of a certain number of neurons. We give an input to the neurons of a layer, they do some calculus (non-linear activation function for example) and they give an output. Therefore, layers can be seen as matrix operations. 
 
-The neurons of a layer are connected to the neurons of the next layer. Thanks to these connections, the output given by a neuron can be transmitted over the neural network. We begin by giving an input to the input layer, which transmits information to the first hidden layer (There isn't always an hidden layer in a neural network. In this case, the input layer is directly connected to the output layer). In turn, it transmit information to the next hidden layer and so on, until the output layer which give us the final output, the prediction. 
+The neurons of each layer are connected to those of the next layer. Thanks to these connections, the output given by a neuron can be transmitted through the neural network. 
 
-With a loss function, we can then determined the accuracy of the neural network and make it more accurate by changing the parameters. We are trying to find the optimal parameters which minimize this loss function. In order to do that, we use gradient descent.
+We begin by giving an input to the input layer, which transmits information to the first hidden layer\footnote{There isn't always an hidden layer in a neural network}. In turn, it transmit information to the next layer and so on, until the output layer gives us the final output, the \textit{prediction}. 
 
 We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. Each layer introduces a little bit of error that propagate through the network.
+
+With a loss function, we can determine the accuracy of the neural network. We are trying to find the optimal parameters which minimize this loss function. In order to do that, we use gradient descent.
 
 \begin{center}
 \includegraphics[scale=0.55]{nn.png}
@@ -128,7 +130,7 @@ We can see a neural network as a composite of functions, a function for each lay
 
 \subsection{Example} \label{2.1}
 
-Let's consider a neural network, with one hidden layer, that takes a 2-dimensional input $x = (x_1, x_2)$, and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
+Let's consider a neural network with one hidden layer that takes a 2-dimensional input $x = (x_1, x_2)$ and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
 
    \begin{eqnarray}
    \nonumber
@@ -141,11 +143,11 @@ Let's consider a neural network, with one hidden layer, that takes a 2-dimension
    \mathcal{L} & = & \frac{1}{2} \sum_{k = 1}^2 (y_k - t_k)^2
    \end{eqnarray}
    
-where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the network, and $t = (t_1, t_2)$ is the value we want to approximate (the "real" output for $x$). 
+where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the network and $t = (t_1, t_2)$ is the value we want to approximate (the "real" output for $x$). 
 
 \subsection{Back propagation}
 
-By backpropagating, we want to determine the differential of the loss function with respect to the parameters in order to minimize this loss function.
+To find the parameters that minimize the loss function, we need to determine the differential of the loss function with respect to the parameters. This process is called \textit{backpropagation}.
 
 We have:
 \begin{align*}
@@ -163,7 +165,7 @@ We have:
 
 \section{Residual neural network} \label{rnn}
 
-A \textit{residual neural network} is simply a regular network except that they have more connections. Indeed, not only do we feed the output of the previous layer to the next, but also the input of that layer. Thanks to that, residual networks have a better accuracy. 
+A \textit{residual neural network} is simply a regular neural network except that it has more connections. Not only do we feed the output of the previous layer to the next, but also the input of that layer. 
 
 In these networks, the $k+1$th layer has the formula:
 \[
@@ -175,20 +177,22 @@ x_{k+1} = x_k + h.F(x_k),
 \]
 which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can later introduce neural ODE.
 
+With these additional connections, we can avoid the problem of the \textit{vanishing gradient} and thus have a better accuracy. 
+
 %TODO voir probleme du vanishing gradient dans les nn regulier
 
 \section{Implicit Layers}
 
 There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{2.1}. 
 
-However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we should define them implicitly. In this case, we specify the condition we want the layer's output to satisfy. 
+However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we can define them implicitly: we specify the condition we want the layer's output to satisfy. 
 
-In other words, lets assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. Then we define the explicit layers by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$ such as $y = f(x)$ for some $x \in \mathcal{X}$. But we define an implicit layer by giving the condition that the function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy (for example we can search for a $y$ such that $g(x,y) = 0$).
+Let's assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. An explicit layer is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. But for an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
 
 A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
 $$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
 
-Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the following theorem can be used. It indicates that if the function $f$ is sufficiently regular in the neighborhood of a point of the curve, there exists a function $\varphi$ at least as regular as $f$ such that locally, the curve and the graph of the function $\varphi$ are confused.
+Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of f and the graph of $\varphi$ are the same.
 %TODO À retravailler !!!
 
 \subsection{Implicit function theorem}
@@ -241,15 +245,15 @@ Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \
 
 %TODO voir def vector field
 
-In a residual neural network, the output for input $x$ is a function $F(x, \Theta)$ where $\Theta$ represents the parameters of each layer. 
+In a residual neural network, the output for an input $x$ is a function $F(x, \Theta)$ where $\Theta$ represents the parameters of the layers. 
 
-But we want to extract all these individual layers and only have one "shared" layer.
+We want to extract all these individual layers to only have one "shared" layer.
 
 %TODO textbf{insérer des dessins!!!}
 
-Any output of the layer of a residual network can be computed in the ODE network with the function:
+Any output of a layer of a residual network can be computed in the ODE network with the function:
 $$F(z_t, t, \Theta)$$
-with $t$ being the number of that layer of the network minus one.
+with $t$ being the number of that layer in the network minus one.
 
 In the figure ?, the output of the $k$th layer is:
 $$z_k = f(z_{k-1}, k-1) + z_{k-1} = F(z_{k-1}, k-1, \Theta).$$

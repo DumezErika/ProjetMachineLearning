@@ -1,0 +1,16 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}Ordinary Differential Equations}{1}{}%
+\contentsline {subsection}{\numberline {1.1}A reminder on ODE}{1}{}%
+\contentsline {subsection}{\numberline {1.2}A simple example}{2}{}%
+\contentsline {subsection}{\numberline {1.3}Euler's method}{2}{}%
+\contentsline {section}{\numberline {2}Neural networks}{2}{}%
+\contentsline {subsection}{\numberline {2.1}Example}{3}{}%
+\contentsline {subsection}{\numberline {2.2}Back propagation}{3}{}%
+\contentsline {section}{\numberline {3}Residual neural network}{4}{}%
+\contentsline {section}{\numberline {4}Implicit Layers}{4}{}%
+\contentsline {subsection}{\numberline {4.1}Implicit function theorem}{5}{}%
+\contentsline {section}{\numberline {5}Neural ODE}{6}{}%
+\contentsline {subsection}{\numberline {5.1}Définition}{6}{}%
+\contentsline {subsection}{\numberline {5.2}Forward pass}{6}{}%
+\contentsline {subsection}{\numberline {5.3}Backward pass: the Adjoint method}{7}{}%
+\contentsline {subsection}{\numberline {5.4}Advantages and disadvantages}{9}{}%
