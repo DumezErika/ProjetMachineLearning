@@ -13,9 +13,9 @@
 \usepackage{stmaryrd}
 
 \theoremstyle{definition}
-\newtheorem{definition}{Définition}
+\newtheorem{definition}{Definition}
 \theoremstyle{definition}
-\newtheorem{theorem}{Théorème}
+\newtheorem{theorem}{Theorem}
 
 \author{Della Bona Sarah, Dumez Erika}
 \title{Introduction to neural ODE}
@@ -27,7 +27,7 @@
 
 \subsection{A reminder on ODE}
 
-An ODE is a function that describes the changes of a function, $u$, through time. In this setting, time is a continuous variable and we don't know the real function, only its derivative.
+An ODE is a equation that describes the changes of a function, $u$, through time. In this setting, time is a continuous variable and we don't know the real function, only its derivative.
 
 \begin{definition}
 Let $f: \Omega \subseteq \mathbb{R} \times \mathbb{R}^N \rightarrow \mathbb{R}^N$. 
@@ -84,6 +84,28 @@ $$
 
 If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solution is $e^t$.
 
+\subsection{Existence and uniqueness of a solution}
+
+%TODO introduire le théorème
+
+\begin{definition}{\textbf{Lipschitz continuous function}}
+
+Given two metric spaces $(X, d_X)$ and $(Yn d_Y)$, where $d_X$ and $d_Y$ denotes the metric on the set $X$ and $Y$ respectively. 
+
+A function $f: X \rightarrow  Y$ is called \textit{Lipschitz continuous} if
+$$
+\exists K \geq 0, \  \forall x_1, x_2 \in X, \  d_Y(f(x_1), f(x_2)) \leq Kd_X(x_1, x_2).
+$$
+\end{definition}
+
+\begin{theorem}{\textbf{Picard-Lindelöf theorem}}
+
+Consider the Cauchy problem
+$$
+y'(t) = f(t, y(t)), \ \ \ y(t_0) = y_0.
+$$
+Suppose $f$ is uniformly Lipschitz continuous in $y$ and continuous in $t$. Then for some value $\epsilon > 0$, there exists a unique solution $y(t)$ to the Cauchy problem on the interval $[t_0 - \epsilon, t_0 + \epsilon]$. 
+\end{theorem}
 
 \subsection{Euler's method}
 It is not always possible to explicitly find a solution to a Cauchy problem, but we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution. 
@@ -120,12 +142,12 @@ The neurons of each layer are connected to those of the next layer. Thanks to th
 
 We begin by giving an input to the input layer, which transmits information to the first hidden layer\footnote{There isn't always an hidden layer in a neural network}. In turn, it transmit information to the next layer and so on, until the output layer gives us the final output, the \textit{prediction}. 
 
-We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. Each layer introduces a little bit of error that propagate through the network.
+We can see a neural network as a composite of functions, a function for each layer. That is because each layer uses an activation function on its input. 
 
-With a loss function, we can determine the accuracy of the neural network. We are trying to find the optimal parameters which minimize this loss function. In order to do that, we use gradient descent.
+With a loss function, we can determine the accuracy of the neural network. Each layer introduces a little bit of error that propagate through the network. We are trying to find the optimal parameters which minimize this loss function. In order to do that, we use gradient descent.
 
 \begin{center}
-\includegraphics[scale=0.55]{nn.png}
+\includegraphics[scale=0.2]{nn.png}
 \end{center}  
 
 \subsection{Example} \label{2.1}
@@ -171,15 +193,25 @@ In these networks, the $k+1$th layer has the formula:
 \[
 x_{k+1} = x_k + F(x_k)
 \]
-where $F$ is the function of the $k$th layer and its activation. This simple formula is a special case of the formula:
+where $F$ is the function of the $k$th layer and its activation. 
+
+We can see that this simple formula is a special case of the formula:
 \[
 x_{k+1} = x_k + h.F(x_k),
 \]
 which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can later introduce neural ODE.
 
-With these additional connections, we can avoid the problem of the \textit{vanishing gradient} and thus have a better accuracy. 
+\begin{center}
+\includegraphics[scale=0.18]{resnet.png}
+\end{center}
 
-%TODO voir probleme du vanishing gradient dans les nn regulier
+With these additional connections, we can avoid the problem of the \textit{vanishing gradient} or of the \textit{exploding gradient} and thus have a better accuracy. 
+
+The vanishing gradient problem is encountered when using gradient descent in the backpropagation. Each of the neural network's weights receives an update proportional to the partial derivative of the loss function with respect to the current weight in each iteration of training. The problem is that in some cases, the gradient will be vanishingly small, effectively preventing the weight from changing its value. In the worst case, this may completely stop the neural network from further training.
+
+When the derivatives take on larger values, the exploding gradient problem risks to be encountered.
+
+%TODO regarder à la première vidéo pour explications sur pourquoi ça empêche ce problème
 
 \section{Implicit Layers}
 
@@ -187,17 +219,14 @@ There is two different ways to define a layer : \textit{explicitly} or \textit{i
 
 However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we can define them implicitly: we specify the condition we want the layer's output to satisfy. 
 
-Let's assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. An explicit layer is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. But for an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
+Formally, let's assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. An explicit layer is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
 
 A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
 $$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
 
-Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of f and the graph of $\varphi$ are the same.
-%TODO À retravailler !!!
+Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of $f$ and the graph of $\varphi$ are the same.
 
 \subsection{Implicit function theorem}
-
-%TODO all the math can be derived using the implicit function theorem but we used a simpler derivation based on resnet}
 
 Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
 
@@ -233,60 +262,56 @@ Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \
 \end{itemize}
 \end{theorem}
 
+We could use the theorem to compute the derivatives for the backpropagation, but in the following we will use a simpler derivation based on resnet with the adjoint method.
 
 \section{Neural ODE}
 
 \subsection{Définition}
 
-%Here, let's consider a neural network as a continuous function with no grouping, no blocks. We normally have to decide how many layers we want in our neural network, and then we can build the network. With this idea, instead of specifying the number of layers, we need to specify the desired accuracy of the function, and it will learn how to train itself within that margin of error. 
-
-%TODO recherche the Universal Approximation Theorem states that, for enough layers or enough parameters, $ML(x)$ can approximate any nonlinear function sufficiently close (subject to some constraints).
-
-
 %TODO voir def vector field
 
-In a residual neural network, the output for an input $x$ is a function $F(x, \Theta)$ where $\Theta$ represents the parameters of the layers. 
+In a residual neural network, the output for an input $x$ is a function $F(x, \theta)$ where $\theta$ represents the parameters of the layers. 
 
 We want to extract all these individual layers to only have one "shared" layer.
 
-%TODO textbf{insérer des dessins!!!}
+Similar to a residual network, a \textit{neural ODE} (or ODE-Net) takes a simple layer as a building block. This “base layer” is going to specify the dynamics of an ODE.
+
+Neural ODE enable us to replace layers of neural networks with a continuous-depth model.
+
+In the ODE neural network, instead of having multiple individual layers, the entire network is one continuous block of computation. This means that we do not need to specify the number of layers beforehand.
 
 Any output of a layer of a residual network can be computed in the ODE network with the function:
-$$F(z_t, t, \Theta)$$
-with $t$ being the number of that layer in the network minus one.
+$$F(z_t, t, \theta)$$
+with $t$ being the layer's number minus one.
 
-In the figure ?, the output of the $k$th layer is:
-$$z_k = f(z_{k-1}, k-1) + z_{k-1} = F(z_{k-1}, k-1, \Theta).$$
+\begin{center}
+\includegraphics[scale=0.18]{ODENet.png}
+\end{center}
+
+In this figure, the output of the $k$th layer is:
+$$z_k = f(z_{k-1}, k-1) + z_{k-1} = F(z_{k-1}, k-1, \theta).$$
 We can then view $z$ as a function of $t$. For example,
 $$z(1) = f(x, 0) + x.$$
 
-We can also write $F$ as a continuous function of $t$, so that $F$ is no longer a function of $z$. However, we need to give it the initial value of $z$, which is $z(0) = x$ (the input).
+We can write $F(z_t, t, \theta) = F(z(t), t, \theta)$. However, we need to give it the initial value of $z$, which is $z(0) = x$ (the input).
 
-Let's now consider that the value given by $F(z(t), t, \Theta)$ is the derivative of $z(t)$. Thus, instead of doing $z(t) = F(z(t), t, \Theta)$, we put the model on the derivative, $z'(x) = F(z(t), t, \Theta)$.  We obtain the following ODE:
-$$ \partial_t z(t) = F(z(t), t, \Theta) $$
-where the initial condition for "time" $0$ is $z(0) = x$. 
+~
 
-To get the output we will have to solve this ODE.
+We saw that in ResNets, the outputs of each layer are the solutions of an ODE using Euler's method. But here we want to use a more precise method and then use a more complex ODE solver. With what we've just shown, it is possible !
 
-The final condition at a certain "time" (the number of layers) will be the desired output of the neural network.
-
+If we consider that the value given by $F(z(t), t, \theta)$ is the derivative of $z(t)$, we can put the model on the derivative, $z'(t) = F(z(t), t, \theta)$.  We obtain the following ODE:
+$$ \partial_t z(t) = F(z(t), t, \theta) $$
+where the initial condition is $z(0) = x$. 
 
 \subsection{Forward pass}
 
-%TODO dire que y = solution odesolver est unique et existe toujours du moment que f est lipschitzienne et continument différentiable partout (ex: pas relu mais tanh)
-
-With the above, we have that the output of the residual neural network is given by
-$$ F(z(n), n, \Theta) $$
-where $n$ is the number of layers. 
-In the ODE neural network, instead of having multiple individual layers, the entire network is one continuous block of computation. This means that we do not need to specify the number of layers beforehand.
-
-We observe that in this case, the layer is defined implicitly by the ODE with initial condition:
-$$ \partial_t z(t) = F(z(t), t, \Theta). $$
+The output $z(t)$ of a layer in an ODE-Net is defined implicitly by the ODE with initial condition:
+$$ \partial_t z(t) = F(z(t), t, \theta), \ \ \ z(0) = x, $$
+where $x$ is the input.
 
 But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver, like Euler method or Runge-Kutta for example. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in section \ref{rnn}.
 
-%TODO ici du code !!!
-
+To be able to use an ODE solver we have to make sure that the function satisfies the hypotheses in the theorem of existence and uniqueness. For example, if the activation function used in the network is ReLu, we can't apply the theorem since it is not derivable in $0$.
 
 \subsection{Backward pass: the Adjoint method}
 Now that we know how to calculate the output from the input and the parameter $\theta$, we need a method to find the optimal $\theta$ that minimize the loss function.
@@ -295,7 +320,7 @@ In regular neural networks, we usually use the gradient descent. However in our 
 
 Let $L$ be a loss function. Then the error for an input $z(t_0)$ is given by :
 $$
-L(z(t_1)) = L \big( z(t_0) + \int_{t_0}^{t_1} f(z(t),t,\theta) dt \big) = L(ODESolve(z(t_0),f,t_0,t_1,\theta))
+L(z(t_1)) = L \big( z(t_0) + \int_{t_0}^{t_1} f(z(t),t,\theta) dt \big)
 $$
 % car f(..) = d(z) et z(1) = z(0) + z(1) - z(0)
 
@@ -305,7 +330,7 @@ With a continuous hidden state, we can write the transformation after an $\varep
 $$
 z(t+\varepsilon) = \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)
 $$
-Let $ G : \varepsilon \mapsto \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)$.
+Let $ G : \varepsilon \mapsto z(t+\varepsilon)$.
 
 We can apply the Chain rule and we have :
 $$
@@ -346,6 +371,8 @@ If we want to compute the gradients with respect to the parameters $\theta$, we 
 $$
 \frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt
 $$
+
+%On utilise la chain rule avec DL/Dtheta = DL/Dz(t) * Dz(t)/Dtheta puis on rentre la deuxième partie dans l'intégrale, qui est la solution de lEDO qui donne a(t) (= DL/Dz(t))
 
 To avoid computing each ODE on its own, we can do all of them at the same time. To do that we can generalize the ODE to:
 $$
@@ -404,7 +431,6 @@ In the development above, we assumed that the loss function $L$ depends only on 
 
 In practice, most ODE solvers have the option to output the state $z(t)$ at multiple times. When the loss depends on these intermediate states, the reverse-mode derivative must be broken into a sequence of separate solves, one between each consecutive pair of output times. At each observation, the adjoint must be adjusted in the direction of the corresponding partial derivative $\frac{\partial L}{\partial z(t_i)}$.
 
-%TODO ici du code aussi
 
  
 

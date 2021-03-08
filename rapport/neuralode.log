@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.10) (preloaded format=pdflatex 2020.10.11)  7 MAR 2021 20:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.10) (preloaded format=pdflatex 2020.10.11)  8 MAR 2021 17:01
 entering extended mode
 **./neuralode.tex
 (neuralode.tex
@@ -281,38 +281,50 @@ File: ubbold.fd 1996/01/01 Blackboard Bold Font Definition File (jk)
 )
 [1
 
-{C:/Users/lilou/AppData/Local/MiKTeX/pdftex/config/pdftex.map}]
-<nn.png, id=21, 424.58624pt x 381.67593pt>
+{C:/Users/lilou/AppData/Local/MiKTeX/pdftex/config/pdftex.map}] [2]
+<nn.png, id=31, 1012.5328pt x 881.54344pt>
 File: nn.png Graphic file (type png)
 <use nn.png>
-Package pdftex.def Info: nn.png  used on input line 128.
-(pdftex.def)             Requested size: 233.52315pt x 209.92241pt.
- [2]
-Overfull \hbox (10.94452pt too wide) in paragraph at lines 133--134
+Package pdftex.def Info: nn.png  used on input line 150.
+(pdftex.def)             Requested size: 202.50298pt x 176.30556pt.
+
+Overfull \hbox (10.94452pt too wide) in paragraph at lines 155--156
 []\T1/cmr/m/n/10 Let's consi-der a neu-ral net-work with one hid-den layer that
  takes a 2-dimensional
  []
 
-[3 <./nn.png>] [4] [5] [6]
-Overfull \hbox (46.58017pt too wide) detected at line 328
+[3 <./nn.png>]
+<resnet.png, id=37, 883.04906pt x 1208.26407pt>
+File: resnet.png Graphic file (type png)
+<use resnet.png>
+Package pdftex.def Info: resnet.png  used on input line 205.
+(pdftex.def)             Requested size: 158.94197pt x 217.47815pt.
+ [4] [5 <./resnet.png>] [6]
+<ODENet.png, id=49, 1482.28781pt x 1238.37656pt>
+File: ODENet.png Graphic file (type png)
+<use ODENet.png>
+Package pdftex.def Info: ODENet.png  used on input line 288.
+(pdftex.def)             Requested size: 266.8003pt x 222.89816pt.
+ [7 <./ODENet.png>]
+Overfull \hbox (46.58017pt too wide) detected at line 353
 []
  []
 
-[7] [8] [9]
-<resnetvsodenet.png, id=58, 392.21532pt x 288.3272pt>
+[8] [9] [10]
+<resnetvsodenet.png, id=65, 392.21532pt x 288.3272pt>
 File: resnetvsodenet.png Graphic file (type png)
 <use resnetvsodenet.png>
-Package pdftex.def Info: resnetvsodenet.png  used on input line 424.
+Package pdftex.def Info: resnetvsodenet.png  used on input line 448.
 (pdftex.def)             Requested size: 274.54884pt x 201.82765pt.
- [10 <./resnetvsodenet.png>] (neuralode.aux) ) 
+ [11 <./resnetvsodenet.png>] (neuralode.aux) ) 
 Here is how much of TeX's memory you used:
- 4891 strings out of 480236
- 67687 string characters out of 2880557
- 363889 words of memory out of 3000000
- 21362 multiletter control sequences out of 15000+200000
+ 4909 strings out of 480236
+ 67918 string characters out of 2880557
+ 363885 words of memory out of 3000000
+ 21378 multiletter control sequences out of 15000+200000
  553853 words of font info for 80 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 60i,12n,66p,513b,424s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 60i,12n,66p,518b,424s stack positions out of 5000i,500n,10000p,200000b,50000s
  <C:\Users\lilou\AppData\Local\Mi
 KTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\lilou\AppData\Lo
 cal\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0700.pk> <C:\Users\lilou\AppD
@@ -341,9 +353,9 @@ fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/lilou/AppData/Local/Program
 s/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/lilou/AppData/Local
 /Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/lilou/AppDa
 ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam7.pfb>
-Output written on neuralode.pdf (10 pages, 688320 bytes).
+Output written on neuralode.pdf (11 pages, 708411 bytes).
 PDF statistics:
- 404 PDF objects out of 1000 (max. 8388607)
+ 424 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 
