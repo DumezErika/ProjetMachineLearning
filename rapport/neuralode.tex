@@ -343,7 +343,7 @@ $$
 
 We have :
 \begin{align*}
-\frac{\partial a(t)}{\partial t} &= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t)}{\varepsilon} \text{ by définition.}\\
+\frac{\partial a(t)}{\partial t} &= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t)}{\varepsilon} \text{ by definition.}\\
 &= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}}{\varepsilon} \text{ by (1).}\\
 &= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial z(t) + \varepsilon f(z(t),t,\theta) + \mathcal{O}(\varepsilon^2)}{\partial z(t)}}{\varepsilon} \text{ by Taylor's development of G in 0.} \\
 &= \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)(\mathbb{1} + \varepsilon \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon^2))}{\varepsilon}\\
@@ -372,7 +372,7 @@ $$
 \frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt
 $$
 
-%On utilise la chain rule avec DL/Dtheta = DL/Dz(t) * Dz(t)/Dtheta puis on rentre la deuxième partie dans l'intégrale, qui est la solution de lEDO qui donne a(t) (= DL/Dz(t))
+%On utilise la chain rule avec DL/Dtheta = DL/Dz(t) * Dz(t)/Dtheta puis on rentre la deuxième partie dans l'intégrale, qui est la solution de l'EDO qui donne a(t) (= DL/Dz(t))
 
 To avoid computing each ODE on its own, we can do all of them at the same time. To do that we can generalize the ODE to:
 $$
