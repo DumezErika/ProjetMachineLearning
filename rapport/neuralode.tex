@@ -224,12 +224,12 @@ Formally, let's assume that we have an input space $\mathcal{X}$ and an output s
 A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
 $$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
 
-Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of $f$ and the graph of $\varphi$ are the same.
 
 \subsection{Implicit function theorem}
 
-Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
+Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of $f$ and the graph of $\varphi$ are the same.
 
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
 We denote the derivative of $f$ evaluated at a point $x \in \mathbb{R}^n$ as :
 
 \[ \partial f : \mathbb{R}^n \rightarrow \mathbb{R}^m \]

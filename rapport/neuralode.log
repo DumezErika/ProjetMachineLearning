@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.10) (preloaded format=pdflatex 2020.10.11)  8 MAR 2021 17:01
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.10) (preloaded format=pdflatex 2020.10.11)  9 MAR 2021 09:03
 entering extended mode
 **./neuralode.tex
 (neuralode.tex
@@ -314,7 +314,7 @@ Overfull \hbox (46.58017pt too wide) detected at line 353
 <resnetvsodenet.png, id=65, 392.21532pt x 288.3272pt>
 File: resnetvsodenet.png Graphic file (type png)
 <use resnetvsodenet.png>
-Package pdftex.def Info: resnetvsodenet.png  used on input line 448.
+Package pdftex.def Info: resnetvsodenet.png  used on input line 450.
 (pdftex.def)             Requested size: 274.54884pt x 201.82765pt.
  [11 <./resnetvsodenet.png>] (neuralode.aux) ) 
 Here is how much of TeX's memory you used:
@@ -353,7 +353,7 @@ fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/lilou/AppData/Local/Program
 s/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/lilou/AppData/Local
 /Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/lilou/AppDa
 ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam7.pfb>
-Output written on neuralode.pdf (11 pages, 708411 bytes).
+Output written on neuralode.pdf (11 pages, 708388 bytes).
 PDF statistics:
  424 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
