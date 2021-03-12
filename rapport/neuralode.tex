@@ -9,71 +9,95 @@
 \usepackage{bbold}
 
 \usepackage{graphicx}
-\usepackage{systeme}
-\usepackage{stmaryrd}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}
+\theoremstyle{definition}
+\newtheorem{notation}{Notation}
 
 \author{Della Bona Sarah, Dumez Erika}
 \title{Introduction to neural ODE}
 \begin{document}
 \maketitle
 %\tableofcontents
- 
+
+\section{Introduction}
+
+In this document, we introduce ODE-nets, which are deep neural networks models using ordinary differential equations. We focus in particular on the mathematical aspects of these neural networks. In order to do this, we give the significant definitions and properties of different notions, like ordinary differential equations, regular and residual neural networks, implicit layers, ... At the end of the document, the advantages and disadvantages of ODE-nets are presented.
+
+
 \section{Ordinary Differential Equations}
 
-\subsection{A reminder on ODE}
+\subsection{A reminder on ordinary differential equations}
 
-An ODE is a equation that describes the changes of a function, $u$, through time. In this setting, time is a continuous variable and we don't know the real function, only its derivative.
+An ordinary differential equation, noted "ODE", is an equation that describes the changes of a function through time. In this setting, time is a continuous variable. The aim is to compute the function from an ODE which describes its derivative.
+
+%TODO omega est-il un ouvert ? Ainsi que theta pour g dans k-order? Je pense qu'il faudrait le noter.
+
+\begin{notation}
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
+
+We denote the derivative of $f$ as :
+$$
+\partial f : \mathbb{R}^n \rightarrow \mathbb{R}^m
+$$
+
+We also write, for $x \in \mathbb{R}^n$ :
+$$
+\partial_t f(x) = \frac{\partial f(x)}{\partial t} 
+$$
+\end{notation}
 
 \begin{definition}
 Let $f: \Omega \subseteq \mathbb{R} \times \mathbb{R}^N \rightarrow \mathbb{R}^N$. 
 
 A \textit{first order ODE} takes of the form:
-\[
-\partial_t u(t) = f(t,u(t)) \textbf{   (1)}
-\]
+$$
+\partial_t u(t) = f(t,u(t))
+$$
 
 \begin{itemize}
-\item A \textit{solution} for (1) is a function $u : I \rightarrow \mathbb{R}^N$ where $I$ is an interval of $\mathbb{R}$ such that:
+\item A \textit{solution} for this ODE is a function $u : I \rightarrow \mathbb{R}^N$ where $I$ is an interval of $\mathbb{R}$ such that:
 	\begin{itemize}
 	\item[•] u is derivable on I,
 	\item[•] $\forall t \in I, f(t, u(t)) \in \Omega$,
 	\item[•] $\forall t \in I, \partial_t u(t) = f(t, u(t))$
 	\end{itemize}
+~
+
 \item An \textit{initial condition} (IC) is a condition of the type:
-\[
+$$
 u(t_0) = u_0
-\]
+$$
 where $(t_0, u_0) \in \Omega$ is fixed.
 
-\item A \textit{Cauchy problem} is an ODE with IC
-\[
+~
+
+\item A \textit{Cauchy problem} is an ODE with IC :
+$$
 \left \{
 \begin{array}{rcl}
 \partial_t u(t) & = & f(t, u(t)) \\
 u(t_0) & = & u_0
 \end{array}
 \right.
-\]
+$$
 \end{itemize}
 \end{definition}
 
 \begin{definition}
-A \textit{k-order ODE} is of the form:
-\[
+A \textit{k-order ODE} takes the form:
+$$
 \partial^k_t v(t) = g(t, v(t), ... , \partial^{k-1}v(t))
-\]
+$$
 where 
-   \begin{eqnarray}
-   \nonumber
-   v & : & I \rightarrow \mathbb{R}^N \\ 
-   \nonumber
-   g & : & \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
-   \end{eqnarray}
+
+\begin{align*}
+v &:  I \rightarrow \mathbb{R}^N \\ 
+g &:  \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
+\end{align*} 
 \end{definition}
 
 \subsection{A simple example}
@@ -86,11 +110,11 @@ If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solu
 
 \subsection{Existence and uniqueness of a solution}
 
-%TODO introduire le théorème
+If we want to calculate a function from an ODE, we need to know the conditions under which this ODE has a solution. Thus, we define what is a function Lipschitz continuous. This notion is crucial for the following theorem giving the conditions for the existence and uniqueness of a solution to an ODE. 
 
-\begin{definition}{\textbf{Lipschitz continuous function}}
-
-Given two metric spaces $(X, d_X)$ and $(Y, d_Y)$, where $d_X$ and $d_Y$ denotes the metric on the set $X$ and $Y$ respectively. 
+\begin{definition}
+Let $d_X$ and $d_Y$ be the metrics on the sets $X$ and $Y$ respectively.
+Let $(X, d_X)$ and $(Y, d_Y)$ be two metric spaces.  
 
 A function $f: X \rightarrow  Y$ is called \textit{Lipschitz continuous} if
 $$
@@ -100,7 +124,7 @@ $$
 
 \begin{theorem}{\textbf{Picard-Lindelöf theorem}}
 
-Consider the Cauchy problem
+Consider the Cauchy problem :
 $$
 y'(t) = f(t, y(t)), \ \ \ y(t_0) = y_0.
 $$
@@ -108,23 +132,34 @@ Suppose $f$ is uniformly Lipschitz continuous in $y$ and continuous in $t$. Then
 \end{theorem}
 
 \subsection{Euler's method}
-It is not always possible to explicitly find a solution to a Cauchy problem, but we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution. 
+Unfortunately, as we can see from the previous theorem, it is not always possible to explicitly find a solution to a Cauchy problem. However, we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution and thus, approximate the real function. 
 
-More precisely, let $T \in \mathbb{R}\backslash\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ s.t. 
-\[
+More precisely, let $T \in \mathbb{R}\backslash\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ such that:
+$$
 u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
-\]
+$$
 
-Let $h_i := t_{i+1} - t_i$, which is called the \textit{step}. To compute those $u_i$, we use \textit{1-step methods} such as Euler's method.
+To compute those points, we use \textit{1-step methods}. These methods compute de next point $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
 
-Euler's method is similar to a Taylor development, the idea is to compute $u(t_{i+1})$ using the following formula:\footnote{We consider that $ \forall i\ \{0,...,n\}, h_i = h$.}
-\[
+Euler's method is a 1-step method with a constant step $h$. It is similar to a Taylor development: the idea is to compute $u(t_{i+1})$ using the following formula:
+$$
 u(t_{i+1}) \approx u(t_i) + h . \partial u(t_i)
-\]
+$$
 where 
-\[
+$$
 \partial u(t_i) = f(t_i, u(t_i)).
-\]
+$$
+
+\begin{definition}
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
+
+We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
+$$
+f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2)
+$$
+
+where $a \in \mathbb{R}^n$ is a vector.
+\end{definition}
 
 \section{Neural networks}
 
@@ -150,20 +185,15 @@ With a loss function, we can determine the accuracy of the neural network. Each 
 \includegraphics[scale=0.2]{nn.png}
 \end{center}  
 
-\subsection{Example} \label{2.1}
+\subsection{Example} \label{exnn}
+Let's consider a neural network with one hidden layer that takes a 2 - dimensional input $x = (x_1, x_2)$ and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
 
-Let's consider a neural network with one hidden layer that takes a 2-dimensional input $x = (x_1, x_2)$ and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
-
-   \begin{eqnarray}
-   \nonumber
-   z_i & = & \sum_{j=1}^2 w_{ij}^{(1)}x_j + b_i^{(1)} \text{ pour } i = 1,2 \\ 
-   \nonumber
-   h_i & = & \sigma (z_i) \text{ pour } i=1,2 \\
-   \nonumber
-   y_k & = & \sum_{i=1}^2 w_{ki}^{(2)}h_i + b_k^{(2)} \text{ pour } k = 1,2 \\
-   \nonumber
-   \mathcal{L} & = & \frac{1}{2} \sum_{k = 1}^2 (y_k - t_k)^2
-   \end{eqnarray}
+\begin{align*}
+z_i &= \sum_{j=1}^2 w_{ij}^{(1)}x_j + b_i^{(1)} \text{ pour } i = 1,2 \\ 
+h_i &= \sigma (z_i) \text{ pour } i=1,2 \\
+y_k &= \sum_{i=1}^2 w_{ki}^{(2)}h_i + b_k^{(2)} \text{ pour } k = 1,2 \\
+\mathcal{L} &= \frac{1}{2} \sum_{k = 1}^2 (y_k - t_k)^2
+\end{align*}
    
 where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the network and $t = (t_1, t_2)$ is the value we want to approximate (the "real" output for $x$). 
 
@@ -171,7 +201,7 @@ where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the networ
 
 To find the parameters that minimize the loss function, we need to determine the differential of the loss function with respect to the parameters. This process is called \textit{backpropagation}.
 
-We have:
+For the previous example, we have:
 \begin{align*}
 \frac{\partial \mathcal{L}}{\partial \mathcal{L}} &= 1 \\
 \frac{\partial \mathcal{L}}{\partial y_k} &= \frac{\partial \mathcal{L}}{\partial \mathcal{L}} . (y_k - t_k) \\
@@ -187,64 +217,52 @@ We have:
 
 \section{Residual neural network} \label{rnn}
 
-A \textit{residual neural network} is simply a regular neural network except that it has more connections. Not only do we feed the output of the previous layer to the next, but also the input of that layer. 
+We still want to approximate a function. A deep neural network really close the the neural ODE network is the \textit{residual neural network}, also called ResNet. It is simply a regular neural network except that it has more connections. Not only do we feed the output of the previous layer to the next, but also the input of that layer. 
 
 In these networks, the $k+1$th layer has the formula:
-\[
+$$
 x_{k+1} = x_k + F(x_k)
-\]
+$$
 where $F$ is the function of the $k$th layer and its activation. 
 
 We can see that this simple formula is a special case of the formula:
-\[
+$$
 x_{k+1} = x_k + h.F(x_k),
-\]
-which is the formula for the Euler method for solving ordinary differential equations (ODEs) when $h = 1$. It is with this observation that we can later introduce neural ODE.
+$$
+which is the formula for the Euler method for solving ODEs when $h = 1$. It is with this observation that we can later introduce neural ODE networks.
 
 \begin{center}
 \includegraphics[scale=0.18]{resnet.png}
 \end{center}
 
-With these additional connections, we can avoid the problem of the \textit{vanishing gradient} or of the \textit{exploding gradient} and thus have a better accuracy. 
+With these additional connections, we can avoid the problems of the \textit{vanishing gradient} and the \textit{exploding gradient} and thus have a better accuracy. 
 
-The vanishing gradient problem is encountered when using gradient descent in the backpropagation. Each of the neural network's weights receives an update proportional to the partial derivative of the loss function with respect to the current weight in each iteration of training. The problem is that in some cases, the gradient will be vanishingly small, effectively preventing the weight from changing its value. In the worst case, this may completely stop the neural network from further training.
+The vanishing gradient problem is encountered when using gradient descent in the backpropagation. Each of the neural network's weights receives an update proportional to the partial derivative of the loss function with respect to the current weight in each iteration of training. 
+
+The problem is that in some cases, the gradient will be vanishingly small, effectively preventing the weight from changing its value. Given that these partial derivatives are computed with the chain rule, this can easily occur, because you keep on multiplying small numbers. The deeper is the neural network, the more likely this problem can occur. In the worst case, this may completely stop the neural network from further training. 
 
 When the derivatives take on larger values, the exploding gradient problem risks to be encountered.
+
+Residual networks avoid the problem of vanishing gradient by introducing short paths which can carry a gradient over the entire extent of very deep networks. This is because adding the information from the previous layer will make these activations larger, so to some extent, they will prevent these activations from becoming exponentially small.
 
 %TODO regarder à la première vidéo pour explications sur pourquoi ça empêche ce problème
 
 \section{Implicit Layers}
 
-There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{2.1}. 
+There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{exnn}. 
 
 However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we can define them implicitly: we specify the condition we want the layer's output to satisfy. 
 
 Formally, let's assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. An explicit layer is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
 
 A special case is a layer that uses an ODE solver. For each layer $t$ we define the output $y(t)$ as the solution of the ODE:
-$$\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.$$
-
+$$
+\partial_t y(t) = f(t, y(t)), \qquad y(0) = y_0.
+$$
 
 \subsection{Implicit function theorem}
 
 Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of $f$ and the graph of $\varphi$ are the same.
-
-Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
-We denote the derivative of $f$ evaluated at a point $x \in \mathbb{R}^n$ as :
-
-\[ \partial f : \mathbb{R}^n \rightarrow \mathbb{R}^m \]
-
-We can write the first-order Taylor's development for $f$ at $x$ as :
-
-\[ f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2) \]
-
-
-where $a \in \mathbb{R}^n$ is a vector.
-
-We also use the following notation :
-
-\[ \partial_0 f(x,y) = \frac{\partial f(x,y)}{\partial x}  \]
-\[ \partial_1 f(x,y) = \frac{\partial f(x,y)}{\partial y}  \]
 
 \begin{theorem}{\textbf{The implicit function theorem}}
 
@@ -252,7 +270,7 @@ Let $f: \mathbb{R}^p \times \mathbb{R}^n \rightarrow \mathbb{R}^n$ be a function
 
 \begin{enumerate}
 \item $f(a_0,z_0) = 0$;
-\item $f$ is continuously differentiable with a non-singular Jacobian, i.e. its determinant is non zero, $\partial_1 f(a_0,z_0) \in \mathbb{R}^{n \times n}$.
+\item $f$ is continuously differentiable with a non-singular Jacobian, i.e. its determinant is non zero, $\partial_z f(a_0,z_0) \in \mathbb{R}^{n \times n}$.
 \end{enumerate}
 Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \mathbb{R}^n$ containing $a_0$ and $z_0$, respectively, and a unique continuous function $z*:S_{a_0} \rightarrow S_{z_0}$ such that:
 \begin{itemize}
@@ -262,7 +280,7 @@ Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \
 \end{itemize}
 \end{theorem}
 
-We could use the theorem to compute the derivatives for the backpropagation, but in the following we will use a simpler derivation based on resnet with the adjoint method.
+We could use the theorem to compute the derivatives for the backpropagation, but in the following we will use a simpler derivation based on ResNet with the adjoint method.
 
 \section{Neural ODE}
 
@@ -274,7 +292,7 @@ In a residual neural network, the output for an input $x$ is a function $F(x, \t
 
 We want to extract all these individual layers to only have one "shared" layer.
 
-Similar to a residual network, a \textit{neural ODE} (or ODE-Net) takes a simple layer as a building block. This “base layer” is going to specify the dynamics of an ODE.
+Similar to a residual network, a \textit{neural ODE network} (or ODE-Net) takes a simple layer as a building block. This “base layer” is going to specify the dynamics of an ODE.
 
 Neural ODE enable us to replace layers of neural networks with a continuous-depth model.
 
