@@ -1,0 +1,19 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Ordinary Differential Equations}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{A reminder on ordinary differential equations}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{A simple example}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Existence and uniqueness of a solution}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Euler's method}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{Neural networks}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Example}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{Back propagation}{section.3}% 9
+\BOOKMARK [1][-]{section.4}{Residual neural network}{}% 10
+\BOOKMARK [1][-]{section.5}{Implicit Layers}{}% 11
+\BOOKMARK [2][-]{subsection.5.1}{Implicit function theorem}{section.5}% 12
+\BOOKMARK [1][-]{section.6}{Neural ODE}{}% 13
+\BOOKMARK [2][-]{subsection.6.1}{D\351finition}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.2}{Forward pass}{section.6}% 15
+\BOOKMARK [2][-]{subsection.6.3}{Backward pass: the Adjoint method}{section.6}% 16
+\BOOKMARK [2][-]{subsection.6.4}{Example}{section.6}% 17
+\BOOKMARK [2][-]{subsection.6.5}{Advantages and disadvantages of ODE-Nets}{section.6}% 18
+\BOOKMARK [1][-]{section.7}{References}{}% 19
