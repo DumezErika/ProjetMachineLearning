@@ -35,7 +35,7 @@ t = torch.linspace(0., 25., args.data_size).to(device)
 # Paramètres optimaux de f ?
 true_A = torch.tensor([[-0.1, 2.0], [-2.0, -0.1]]).to(device)
 
-# Définit la vraie spirale? 
+# Définit les dynamiques de la vraie spirale ? 
 class Lambda(nn.Module):
 
     def forward(self, t, y):
