@@ -6,7 +6,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{bbold}
+\usepackage{dsfont}
 
 \usepackage{hyperref}
 
@@ -21,10 +21,14 @@
 \newtheorem{notation}{Notation}
 
 \author{Della Bona Sarah, Dumez Erika}
-\title{Introduction to neural ODE}
+\title{Introduction to Neural ODE}
 \begin{document}
 \maketitle
 
+\newpage
+\tableofcontents
+
+\newpage
 \section{Introduction}
 
 In this document, we introduce ODE-nets, which are deep neural networks models using ordinary differential equations. We focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, implicit layers, ... 
@@ -36,41 +40,44 @@ In this document, we introduce ODE-nets, which are deep neural networks models u
 
 \subsection{A reminder on ordinary differential equations}
 
-An ordinary differential equation, noted "ODE", is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
+An\textit{ ordinary differential equation} (ODE) is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
 
 
-\begin{notation}
-Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
+\begin{definition}
+Let   $$\begin{array}{rclc}
+f: & \mathbb{R}^n & \rightarrow &  \mathbb{R}^m \\
+&x = (x_1, \dots, x_n) & \mapsto & f(x_1, \dots, x_n)
+\end{array}$$ be a function.
 
-We denote the derivative of $f$ as :
+The \textit{partial derivative} of $f$ with respect to the variable $x_i$ is denoted by
 $$
-\partial f : \mathbb{R}^n \rightarrow \mathbb{R}^m
+\frac{\partial f}{\partial x_i} :\mathbb{R}^n \rightarrow \mathbb{R}^m.
 $$
 
-We also write, for $x \in \mathbb{R}^n$ :
+For $a\in \mathbb{R}^n$, the partial derivative of $f$ with respect to $x_i$, if it exists, is defined as
 $$
-\partial_t f(x) = \frac{\partial f(x)}{\partial t} 
+\frac{\partial f}{\partial x_i}(a) = \lim_{h\rightarrow0}\frac{f(a_1,\dots , a_{i-1}, a_i + h, a_{i+1}, \dots a_n) - f(a_1,\dots, a_i,\dots, a_n)}{h}.
 $$
-\end{notation}
+\end{definition}
 
 \begin{definition}
 Let $\Omega \subseteq \mathbb{R} \times \mathbb{R}^N$ an open set. Let $f: \Omega \rightarrow \mathbb{R}^N$. 
 
-A \textit{first order ODE} takes of the form:
+A \textit{first order ODE} takes the form
 $$
-\partial_t u(t) = f(t,u(t))
+\frac{\partial u}{\partial t}(t) = f(t,u(t))
 $$
 
 \begin{itemize}
-\item A \textit{solution} for this ODE is a function $u : I \rightarrow \mathbb{R}^N$ where $I$ is an interval of $\mathbb{R}$ such that:
+\item A \textit{solution} for this ODE is a function $u : I\in \mathbb{R} \rightarrow \mathbb{R}^N$, where $I$ is an interval, such that
 	\begin{itemize}
-	\item[•] u is derivable on I,
+	\item[•] u is differentiable on $I$,
 	\item[•] $\forall t \in I, (t, u(t)) \in \Omega$,
 	\item[•] $\forall t \in I, \partial_t u(t) = f(t, u(t))$
 	\end{itemize}
 ~
 
-\item An \textit{initial condition} (IC) is a condition of the type:
+\item An \textit{initial condition} (IC) is a condition of the type
 $$
 u(t_0) = u_0
 $$
@@ -78,7 +85,7 @@ where $(t_0, u_0) \in \Omega$ is fixed.
 
 ~
 
-\item A \textit{Cauchy problem} is an ODE with IC :
+\item A \textit{Cauchy problem} is an ODE with IC
 $$
 \left \{
 \begin{array}{rcl}
@@ -90,39 +97,40 @@ $$
 \end{itemize}
 \end{definition}
 
-\begin{definition}
-A \textit{k-order ODE}, with $k \in \mathbb{N}\backslash \{0\}$, takes the form:
-$$
-\partial^k_t v(t) = g(t, v(t), ... , \partial^{k-1}v(t))
-$$
-where 
-
-\begin{align*}
-v &:  I \rightarrow \mathbb{R}^N, I\subset \mathbb{R} \\ 
-g &:  \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
-\end{align*} 
-\end{definition}
+%\begin{definition}
+%A \textit{k-order ODE}, with $k \in \mathbb{N}\backslash \{0\}$, takes the form
+%$$
+%\partial^k_t v(t) = g(t, v(t), ... , \partial^{k-1}v(t))
+%$$
+%where 
+%
+%\begin{align*}
+%v &:  I \rightarrow \mathbb{R}^N, I\subset \mathbb{R} \\ 
+%g &:  \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
+%\end{align*} 
+%\end{definition}
 
 \subsection{A simple example}
-Let $\partial_t x(t) = x(t)$ an ODE. The solutions of this ODE are given by : 
+Let $\frac{\partial x}{\partial t}(t) = x(t)$ an ODE. The solutions of this ODE are
 $$
-a . e^t \text{ where } a\in \mathbb{R}.
+\{ x(t) = ae^t\ |\ a\in \mathbb{R}\}.
 $$
 
-Indeed, we have:
+Indeed, for all $a \in \mathbb{R}$ we have
 $$
-\partial_t a.e^t = a.e^t
+\frac{\partial ae^t}{\partial t} = ae^t
 $$
 If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solution is $e^t$, since $e^0 = 1$ and $\partial_te^t = e^t$.
 
 \subsection{Existence and uniqueness of a solution}
 
-If we want to calculate a function from an ODE, we need to know the conditions under which this ODE has a solution. Thus, we define \textit{Lipschitz continuous functions}. This notion is crucial for the following theorem which gives conditions for the existence and uniqueness of a solution to an ODE.
+If we want to find the solution to an ODE, we need to know the conditions under which this ODE has a solution. Thus, we define \textit{Lipschitz continuous functions}. This notion is crucial for the following theorem which gives conditions for the existence and uniqueness of a solution to an ODE.
 
 \begin{definition}
 Let $(X, d_X)$ and $(Y, d_Y)$ be two metric spaces.  
+A function 
 
-A function $f: X \rightarrow  Y$ is called \textit{Lipschitz continuous} if
+\noindent $f: X \rightarrow  Y$ is called \textit{Lipschitz continuous} if
 $$
 \exists K \geq 0, \  \forall x_1, x_2 \in X, \  d_Y(f(x_1), f(x_2)) \leq Kd_X(x_1, x_2).
 $$
@@ -130,48 +138,64 @@ $$
 
 \begin{theorem}{\textbf{Picard-Lindelöf theorem}}
 
-Consider the Cauchy problem :
+Consider the Cauchy problem
 $$
-y'(t) = f(t, y(t)), \ \ \ y(t_0) = y_0.
+\frac{\partial u}{\partial t} (t) = f(t, u(t)), \ \ \ u(t_0) = u_0.
 $$
-Suppose $f$ is uniformly Lipschitz continuous in $y$ and continuous in $t$. Then for some value $\epsilon > 0$, there exists a unique solution $y(t)$ to the Cauchy problem on the interval $[t_0 - \epsilon, t_0 + \epsilon]$. 
+Suppose $f$ is uniformly Lipschitz continuous in $u$ and continuous in $t$. Then for some value $T > 0$, there exists a unique solution $u(t)$ to the Cauchy problem on the interval $[t_0, t_0 + T]$. 
 \end{theorem}
 
+\subsection{One-step methods}
+Unfortunately, it is not always possible to explicitly find a solution to a Cauchy problem. However, let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We can compute a finite number of points $(u_1, \dots, u_n)$ such that:
+$$
+\forall i\in \{0,\dots, n\},  u_i \approx u(t_i).
+$$
+
+To compute those points, we use \textit{one-step methods} which compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
+
 \subsection{Euler's method}
-Unfortunately, as we saw in the previous theorem, it is not always possible to explicitly find a solution to a Cauchy problem. However, we can compute a finite number of points $u_i \in \mathbb{R}^N$ which are close to the real solution and thus, approximate the real function. 
-
-More precisely, let $T \in \mathbb{R}\backslash\{0\}$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \in \mathbb{N}^{\geqslant 2}$. We are then looking for $(u_i)^n_{i=0}$ such that:
+Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development \footnote{See the annex.}, the idea is to compute $u(t_{i+1})$ using the formula
 $$
-u_i \approx u(t_i) \ \text{ where } t_0 < ... < t_n \in [t_0, t_0 + T]
-$$
-
-To compute those points, we use \textit{1-step methods}. These methods compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
-
-Euler's method is a 1-step method with a constant step $h$. It is similar to a Taylor development: the idea is to compute $u(t_{i+1})$ using the following formula:
-$$
-u(t_{i+1}) \approx u(t_i) + h . \partial u(t_i)
+u(t_{i+1}) \approx u(t_i) + h\frac{\partial u}{\partial t}(t_i)
 $$
 where 
 $$
-\partial u(t_i) = f(t_i, u(t_i)).
+\frac{\partial u}{\partial t}(t_i) = f(t_i, u(t_i)).
 $$
 
-\begin{definition}
-Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function.
 
-We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
+\section{Machine Learning}
+In a typical machine learning problem, we have an output variable $Y$ to $p$ predictors $X_1,\dots, X_p$, also called input variable, where $p\in \mathbb{N}\backslash \{0\}$. The inputs belongs to an input space $\mathcal{X}$ and usually $\mathcal{X} \subset \mathbb{R}^p$. The output belongs to a output space $\mathcal{Y}$. It depends on the problem, for example: if this is a regression problem, $\mathcal{Y} \subset \mathbb{R}$. But if we have a classification problem with $K$ categories, $\mathcal{Y} = \{1,2,\dots, K\}$.
+
+Let's assume that there is some relationship between $Y$ and $X = (X_1,\dots, X_p)$, which can be written in the general form
 $$
-f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2)
+Y = f(X) + \epsilon.
+$$
+Here $f$ is some fixed but unknown function, called \textit{target function}, of $X_1, \dots, X_p$ and $\epsilon$ is a random error term which is independent of $X$ and has mean zero.
+
+The goal of machine learning is to estimate this function $f$ as precisely as possible. To do that, we need a \textit{data set} to learn. The data is a set of $n$ points in $\mathcal{X} \times \mathcal{Y}$
+$$
+\mathcal{D} = \{(x_1, y_1),\dots, (x_n,y_n)\}.
 $$
 
-where $a \in \mathbb{R}^n$ is a vector.
-\end{definition}
+We can predict $Y$ using
+$$
+\hat{Y} = \hat{f}(X),
+$$
+where $\hat{f}$ represents our estimate for $f$, and $\hat{Y}$ represents the resulting prediction for $Y$.
 
-\section{Neural networks}
+To determine the precision of an estimation $\hat{f}$, we use a \textit{loss function}, which is a function of a prediction and the output given by the target function. Some example of loss functions are
+\begin{itemize}
+\item Square error loss: $L_1(y, \hat{y}) = (y-\hat{y})^2$;
+\item Absolute error loss: $L_2(y, \hat{y}) = |y - \hat{y}|$;
+\item Zero-one loss: $L_3(y, \hat{y}) = \mathds{1}_{\{(y, \hat{y}) | y\neq \hat{y}\}}(y, \hat{y})$.
+\end{itemize}
 
-In a typical machine learning problem, we are given some input $x$ and we want to predict an output $y$. 
 
-\noindent A \textit{neural network} can be used to solve such a problem. It consists of a series of layers. There are three types of layers :
+\subsection{Neural networks}
+
+
+\noindent A \textit{neural network} can be used to solve a machine learning problem. It consists of a series of layers. There are three types of layers :
 
 \begin{itemize}
 \item The \textit{input} layer
@@ -182,7 +206,7 @@ In a typical machine learning problem, we are given some input $x$ and we want t
 Each layer consist of a certain number of neurons. We give an input to the neurons of a layer, they do some calculus and give an output. An \textit{activation function} is then applied to this output before transmitting it to the next layer thanks to the connections between the neurons of each layer.
 
 ~
-
+%TODO mettre les formules directement dans la définition
 We begin by giving an input to the input layer, which transmits information to the first hidden layer\footnote{There isn't always an hidden layer in a neural network}. In turn, it transmit information to the next layer and so on, until the output layer gives us the final output, the \textit{prediction}. An example of neural network is given in figure \ref{examplenn}.
 
 \begin{figure}
@@ -192,33 +216,27 @@ We begin by giving an input to the input layer, which transmits information to t
 \label{examplenn}
 \end{figure}
 
-\newpage
-
-To evaluate the accuracy of a neural network, we use \textit{loss functions.} 
-
-Let $x$ be an input for our neural network. A loss function $L$ takes as input the prediction of the network for $x$ and the real output $y$ of that input $x$, and returns a real value which represents the error for that input. 
-
-An example of loss function for outputs in $\mathbb{R}$ is the function that returns $|y - g(x)|$, where $x$ is the input, $y$ is its associated output and $g(x)$ is the output predicted by the network.
-
-The goal is to minimize this error for every input. To do that, we need to find the optimal parameters for the network which minimize this loss function.
+The goal is to minimize the error for every input. To do that, we need to find the optimal parameters for the network which minimize the loss function.
 
 \subsection{Example} \label{exnn}
 Let's consider a neural network with one hidden layer that takes a 2 - dimensional input $x = (x_1, x_2)$ and gives a 2-dimensional output $y = (y_1,y_2)$. We can represent this network with the following equations:
 
 \begin{eqnarray*}
-z_i = \sum_{j=1}^2 w_{ij}^{(1)}x_j + b_i^{(1)} & \text{ pour } i = 1,2 \\ 
-h_i = \sigma (z_i) & \text{ pour } i=1,2 \\
-y_k = \sum_{i=1}^2 w_{ki}^{(2)}h_i + b_k^{(2)} & \text{ pour } k = 1,2 \\
+z_i = \sum_{j=1}^2 w_{ij}^{(1)}x_j + b_i^{(1)} & \text{ for } i = 1,2 \\ 
+h_i = \sigma (z_i) & \text{ for } i=1,2 \\
+y_k = \sum_{i=1}^2 w_{ki}^{(2)}h_i + b_k^{(2)} & \text{ for } k = 1,2 \\
 \mathcal{L} = \frac{1}{2} \sum_{k = 1}^2 (y_k - t_k)^2
 \end{eqnarray*}
    
-where $w^{(1)}$, $w^{(2)}$, $b^{(1)}$ and $b^{(2)}$ are parameters of the network and $t = (t_1, t_2)$ is the value we want to approximate (the "real" output for $x$). 
+where $w^{(1)}, w^{(2)} \in \mathbb{R}^2\times \mathbb{R}^2$ and $b^{(1)}, b^{(2)} \in \mathbb{R}^2$ are parameters of the network and $t = (t_1, t_2)$ is the value we want to approximate (the "real" output for $x$). 
 
 In this network, the first layer takes as input $x_i$ and returns $h_i = \sigma(z_i)$. This value is given to the next layer, which is actually the output layer. The final output is then $y_i$.
 
 \subsection{Back propagation}
-To find the parameters that minimize the loss function, we need to determine the differential of the loss function with respect to the parameters. Indeed, we know that if the differential of a function is $0$ at a certain point, then this point is a local extremum. 
-This process is called \textit{backpropagation}.
+Let $\theta$ be the parameters of the network. To find $\theta$ that minimize the loss function, we need to determine the partial derivative of the loss function with respect to the parameters, $\frac{\partial L}{\partial \theta}$. Indeed, we know that if the partial derivative of a function is $0$ at a certain point, then this point is a local extremum. 
+
+%TODO expliquer la backpropagation
+%This process is called \textit{backpropagation}.
 
 For the previous example, we have:
 \begin{eqnarray*}
@@ -234,7 +252,7 @@ For the previous example, we have:
 
 %TODO ajouter computation graph + methode vectorielle ?
 
-\section{Residual neural network} \label{rnn}
+\subsection{Residual neural network} \label{rnn}
 
 A deep neural network really close the a neural ODE network is the \textit{residual neural network}, also called ResNet. It is simply a regular neural network except that it has more connections. Not only do we feed the output of the previous layer to the next, but also the input of that layer. 
 An example of the representation of a ResNet is given in figure \ref{exampleresnet}
@@ -272,7 +290,7 @@ Residual networks avoid the problem of vanishing gradient by introducing short p
 
 %TODO regarder à la première vidéo pour explications sur pourquoi ça empêche ce problème
 
-\section{Implicit Layers}
+\subsection{Implicit Layers}
 
 There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{exnn}. 
 
@@ -532,4 +550,13 @@ On the other hand, ResNets have no problem approximating this type of function.
 \url{https://www.youtube.com/watch?v=uPd0B0WhH5w}
 \end{itemize}
 
+\newpage
+\section{Annex}
+\begin{definition}
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function and $a\in \mathbb{R}^n$.
+We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
+$$
+f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2).
+$$
+\end{definition}
 \end{document}
