@@ -73,7 +73,7 @@ $$
 	\begin{itemize}
 	\item[•] u is differentiable on $I$,
 	\item[•] $\forall t \in I, (t, u(t)) \in \Omega$,
-	\item[•] $\forall t \in I, \partial_t u(t) = f(t, u(t))$
+	\item[•] $\forall t \in I, \frac{\partial u}{\partial t}(t) = f(t, u(t))$
 	\end{itemize}
 ~
 
@@ -89,7 +89,7 @@ where $(t_0, u_0) \in \Omega$ is fixed.
 $$
 \left \{
 \begin{array}{rcl}
-\partial_t u(t) & = & f(t, u(t)) \\
+\frac{\partial u}{\partial t}(t) & = & f(t, u(t)) \\
 u(t_0) & = & u_0
 \end{array}
 \right.
@@ -122,7 +122,7 @@ $$
 $$
 If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solution is $e^t$, since $e^0 = 1$ and $\partial_te^t = e^t$.
 
-\subsection{Existence and uniqueness of a solution}
+\subsection{Existence and uniqueness of a solution} \label{exiunique}
 
 If we want to find the solution to an ODE, we need to know the conditions under which this ODE has a solution. Thus, we define \textit{Lipschitz continuous functions}. This notion is crucial for the following theorem which gives conditions for the existence and uniqueness of a solution to an ODE.
 
@@ -153,7 +153,7 @@ $$
 
 To compute those points, we use \textit{one-step methods} which compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
 
-\subsection{Euler's method}
+\subsection{Euler's method} \label{euler}
 Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development \footnote{See the annex.}, the idea is to compute $u(t_{i+1})$ using the formula
 $$
 u(t_{i+1}) \approx u(t_i) + h\frac{\partial u}{\partial t}(t_i)
@@ -249,7 +249,6 @@ We can now use the backpropagation algorithm to easily compute $\frac{\partial \
 \center
 \includegraphics[scale=0.3]{computation_graph.png}
 \caption{Computation graph}
-\label{examplenn}
 \end{figure}
 
 \begin{eqnarray*}
@@ -332,51 +331,47 @@ There is two different ways to define a layer : \textit{explicitly} or \textit{i
 
 However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we can define them implicitly: we specify the condition we want the layer's output to satisfy. 
 
-Formally, let's assume that we have an input space $\mathcal{X}$ and an output space $\mathcal{Y}$. An explicit layer is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. 
+An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
 
-~
-
-For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
-
-\subsection{Implicit function theorem}
-
-Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of $f$ and the graph of $\varphi$ are the same.
-
-\begin{theorem}{\textbf{The implicit function theorem}}
-
-Let $f: \mathbb{R}^p \times \mathbb{R}^n \rightarrow \mathbb{R}^n$ be a function and $a_0 \in \mathbb{R}^p , z_0 \in \mathbb{R}^n$ two vectors such that :
-
-\begin{enumerate}
-\item $f(a_0,z_0) = 0$;
-\item $f$ is continuously differentiable with a non-singular Jacobian, i.e. its determinant is non zero, $\partial_z f(a_0,z_0) \in \mathbb{R}^{n \times n}$.
-\end{enumerate}
-Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \mathbb{R}^n$ containing $a_0$ and $z_0$, respectively, and a unique continuous function $z*:S_{a_0} \rightarrow S_{z_0}$ such that:
-\begin{itemize}
-\item $z_0=z^*(a_0)$,
-\item $ \forall a \in S_{a_0}, f(a,z^*(a))=0$,
-\item $z^*$ is differentiable on $S_{a_0}$.
-\end{itemize}
-\end{theorem}
-
-We could use the theorem to compute the derivatives for the backpropagation, but in the following we will use a simpler derivation based on ResNet with the adjoint method.
+%\subsection{Implicit function theorem}
+%
+%Sometimes, variables can not be defined by a function but are rather defined by an equation. In this case, the \textit{implicit function theorem} can be used. It says that if a function $f$ is sufficiently regular in the neighborhood of a point, then there exists a function $\varphi$ at least as regular as $f$ such that locally, the graph of $f$ and the graph of $\varphi$ are the same.
+%
+%\begin{theorem}{\textbf{The implicit function theorem}}
+%
+%Let $f: \mathbb{R}^p \times \mathbb{R}^n \rightarrow \mathbb{R}^n$ be a function and $a_0 \in \mathbb{R}^p , z_0 \in \mathbb{R}^n$ two vectors such that :
+%
+%\begin{enumerate}
+%\item $f(a_0,z_0) = 0$;
+%\item $f$ is continuously differentiable with a non-singular Jacobian, i.e. its determinant is non zero, $\partial_z f(a_0,z_0) \in \mathbb{R}^{n \times n}$.
+%\end{enumerate}
+%Then there exist open sets $S_{a_0} \subset \mathbb{R}^p$ and $S_{z_0} \subset \mathbb{R}^n$ containing $a_0$ and $z_0$, respectively, and a unique continuous function $z*:S_{a_0} \rightarrow S_{z_0}$ such that:
+%\begin{itemize}
+%\item $z_0=z^*(a_0)$,
+%\item $ \forall a \in S_{a_0}, f(a,z^*(a))=0$,
+%\item $z^*$ is differentiable on $S_{a_0}$.
+%\end{itemize}
+%\end{theorem}
+%
+%We could use the theorem to compute the derivatives for the backpropagation, but in the following we will use a simpler derivation based on ResNet with the adjoint method.
 
 \section{Neural ODE} \label{neuralode}
 
-\subsection{Définition}
+\subsection{Introduction}
 
-In a residual neural network, the output for an input $x$ is a composition of functions $F(x, \theta)$ where $\theta$ represents the parameters of the layers. 
-
-We want to extract all these individual layers to only have one "shared" layer.
+In a residual neural network, the output for an input $x$ is a composition of functions. We want to extract all these individual layers to only have one "shared" layer.
 
 A \textit{neural ODE network} (or ODE-Net) takes a simple layer as a building block. This “base layer” is going to specify the dynamics of an ODE.
 ODE-Net enable us to replace layers of neural networks with a continuous-depth model. This means that we do not need to specify the number of layers beforehand.
 
-Let's return to ResNets to give intuition behind this definition.
-We know that any output of a layer of a residual network can be computed with the function:
+Let us return to ResNets to give intuition behind this definition. We know that any output of the $k^{th}$ layer of a residual network can be computed with the function
 \begin{equation*}
-F(z_t, t, \theta) = f(z_t, t) + z_t
+F(z_t, t; \theta) = f(z_t, t) + z_t
 \end{equation*}
-with $t$ being the layer's number minus one.
+where $t = k - 1$.
+
+Thus, in the ResNet, the output for the input $z_0 = x$ is a composition of the functions $F(z_t, t; \theta)$ where $\theta$ represents the parameters of the layers.
+
 
 \begin{figure}
 \center
@@ -392,13 +387,13 @@ With that, we can write $F(z_t, t, \theta) = F(z(t), t, \theta)$. However, we ne
 
 ~
 
-We saw that in ResNets, the outputs of each layer are the solutions of an ODE using Euler's method. The ODE from which it is a solution is $\partial_tz(t) = f(z(t),t,\theta)$. But here we want to use a more precise method and then use a more complex ODE solver. With what we've just shown, it is possible !
+We saw that in ResNets, the outputs of each layer are the solutions of an ODE using Euler's method (cf Section \ref{euler}). The ODE from which it is a solution is $\frac{\partial z}{\partial t}(t) = f(z(t),t;\theta)$. But here we want to use a more precise method and then use a more complex ODE solver such as linear multistep methods. With what we've just shown, it is possible !
 
 If we consider that the value given by $f(z(t), t, \theta)$ is the derivative of $z(t)$, we obtain the following Cauchy problem:
 \begin{equation}
 \label{cauchypb}
 \begin{cases}
-\partial_t z(t) =  f(z(t), t, \theta) \\
+\frac{\partial z}{\partial t}(t) =  f(z(t), t; \theta) \\
 z(0) =  x
 \end{cases}
 \end{equation}
@@ -408,16 +403,21 @@ z(0) =  x
 
 Layers in an ODE-Net are implicit. The output $z(t)$ of a layer in an ODE-Net is defined by the Cauchy problem (\ref{cauchypb}).
 
-But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver, like Euler method or Runge-Kutta for example. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in section \ref{rnn}.
+But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in Section \ref{rnn}.
 
-To be able to use an ODE solver we have to make sure that the function satisfies the hypotheses in the theorem of existence and uniqueness. For example, if the activation function used in the network is ReLu, we can't apply the theorem since it is not derivable in $0$.
+To be able to use an ODE solver we have to make sure that the function satisfies the hypotheses in the theorem of existence and uniqueness (cf Section \ref{exiunique}). For example, if the activation function used in the network is ReLu, we can't apply the theorem since it is not differentiable at $0$.
 
 \subsection{Backward pass: the Adjoint method}
 Now that we know how to calculate the output from the input and the parameter $\theta$, we need a method to find the optimal $\theta$ that minimize the loss function.
 
 In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the \textit{adjoint method}. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
 
-Let $L$ be a loss function. To minimize this loss function $L$, we need gradients with respect to $\theta$. To achieve that, we first need to determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is $\frac{\partial L}{\partial z(t)}$. This quantity is called the \textit{adjoint} and is noted $a(t)$. We would like to determine its dynamics, so we need to compute its derivative with respect to $t$. \footnote{Here we see the vectors as row vectors.}
+Let $L$ be a loss function. To minimize this loss function $L$, we need gradients with respect to the parameters $\theta$. To achieve that, we first need to determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is
+\begin{equation}
+a(t)= \frac{\partial L}{\partial z(t)}
+\end{equation}
+
+This quantity is called the \textit{adjoint}. We would like to determine its dynamics, so we need to compute its derivative with respect to $t$. \footnote{Here we see the vectors as row vectors.}
 
 With a continuous hidden state, we can write the transformation after an $\varepsilon$ change in time as :
 \begin{equation}
@@ -425,14 +425,11 @@ With a continuous hidden state, we can write the transformation after an $\varep
 z(t+\varepsilon) = \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)
 \end{equation}
 % car f(..) = d(z) et z(1) = z(0) + z(1) - z(0)
-Let $ G : \varepsilon \mapsto z(t+\varepsilon)$.
-
-We can apply the Chain rule and we have :
+Let $ G : \varepsilon \mapsto z(t+\varepsilon)$. We can apply the Chain rule and we have 
 \begin{equation*}
-\frac{\partial L}{\partial z(t)} = \frac{\partial L}{\partial z(t+\varepsilon)} \frac{\partial z(t+\varepsilon)}{\partial z(t)}
+\frac{\partial L}{\partial z(t)} = \frac{\partial L}{\partial z(t+\varepsilon)} \frac{\partial z(t+\varepsilon)}{\partial z(t)}.
 \end{equation*}
-
-In other words :
+In other words 
 \begin{equation}
 \label{at}
 a(t) = a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}
@@ -441,12 +438,12 @@ a(t) = a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}
 
 We can now compute the derivative of $a(t)$ :
 \begin{eqnarray*}
-\frac{\partial a(t)}{\partial t} &=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t)}{\varepsilon} \text{ by definition of the derivative.}\\
+\frac{\partial a}{\partial t}(t) &=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t)}{\varepsilon} \text{ by definition of the derivative.}\\
 &=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}}{\varepsilon} \text{ by (\ref{at}).}\\
-&=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial z(t) + \varepsilon f(z(t),t,\theta) + \mathcal{O}(\varepsilon^2)}{\partial z(t)}}{\varepsilon}  \text{ by Taylor's development of G in 0.} \\
-&=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)(\mathbb{1} + \varepsilon \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon^2))}{\varepsilon}\\
-&=& \lim_{\varepsilon \rightarrow 0^+} \frac{-\varepsilon a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon^2)}{\varepsilon}\\
-&=& \lim_{\varepsilon \rightarrow 0^+} - a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ \mathcal{O}(\varepsilon)\\
+&=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial z(t) + \varepsilon f(z(t),t,\theta) + O(\varepsilon^2)}{\partial z(t)}}{\varepsilon}  \text{ by Taylor's development of G in 0.} \\
+&=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)(\mathds{1} + \varepsilon \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ O(\varepsilon^2))}{\varepsilon}\\
+&=& \lim_{\varepsilon \rightarrow 0^+} \frac{-\varepsilon a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ O(\varepsilon^2)}{\varepsilon}\\
+&=& \lim_{\varepsilon \rightarrow 0^+} - a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ O(\varepsilon)\\
 &=& -a(t)\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
 \end{eqnarray*}
 
@@ -551,7 +548,6 @@ On the other hand, ResNets have no problem approximating this type of function.
 
 \begin{figure}[!h]
 \center
-\label{x2}
 \includegraphics[scale=0.45]{x2gres.png}
 \caption{Evolution of the output from the ResNet w.r.t. the depth}
 \end{figure}
