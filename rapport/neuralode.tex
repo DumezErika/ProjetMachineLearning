@@ -323,7 +323,27 @@ With these additional connections, we can avoid the problems of the \textit{vani
 
 Residual networks avoid the problem of vanishing gradient by introducing short paths which can carry a gradient over the entire extent of very deep networks. This is because adding the information from the previous layer will make these activations larger, so to some extent, they will prevent these activations from becoming exponentially small.
 
-%TODO regarder à la première vidéo pour explications sur pourquoi ça empêche ce problème
+We can implement a simple ResNet to approximate the function
+$$
+h(x) = x^3 + 0.1x.
+$$
+To do that, we generate $10$ points between $-2.5$ and $2.5$. Their associated output comes from the function
+$$
+h(x) + \varepsilon,
+$$
+where $\varepsilon$ is a noise variable with mean $0$ and standard deviation $1$.
+
+We train a ResNet with $3$ layers, the hidden one having $20$ neurons. After $1000$ iteration, we get the function given in Figure \ref{example_resnet}.
+
+\begin{figure}
+\center
+\includegraphics[scale=0.4]{ex_resnet.png}
+\caption{Result of the training for the ResNet}
+\label{example_resnet}
+\end{figure}
+
+The green points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ResNet. The out-of-sample error for the points used to trace the line is $4.6735477$.
+
 
 \subsection{Implicit Layers}
 
@@ -537,6 +557,26 @@ With this generalized method, we have gradients for all possible inputs to a Cau
 %\includegraphics[scale=0.45]{x2gres.png}
 %\caption{Evolution of the output from the ResNet w.r.t. the depth}
 %\end{figure}
+\subsection{Simple Example}
+
+Let's reuse the example for ResNets. We have the function 
+$$
+h(x) = x^3 + 0.1x
+$$
+that we wish to approximate.We use the same training data as for the ResNet.
+
+The dynamics of the ODE-Net is specified by a layer of size $20$. After $1000$ iteration, we get the function given in Figure \ref{example_odenet}.
+
+\begin{figure}[!h]
+\center
+\includegraphics[scale=0.4]{ex_odenet.png}
+\caption{Result of the training for the ODE-Net}
+\label{example_odenet}
+\end{figure}
+
+The green points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ODE-Net.
+
+
 
 \subsection{Advantages and disadvantages of ODE-Nets}
 
