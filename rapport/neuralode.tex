@@ -383,7 +383,7 @@ We can then view $z$ as a function of $t$. For example,
 \begin{equation*}
 z(1) = f(x, 0) + x.
 \end{equation*}
-With that, we can write $F(z_t, t, \theta) = F(z(t), t, \theta)$. However, we need to give it the initial value of $z$, which is $z(0) = x$ (the input).
+With that, we can write $F(z_t, t, \theta) = F(z(t), t, \theta)$. However, we need to give it the initial value of $z$, which is $z(t_0) = x$ (the input).
 
 ~
 
@@ -394,30 +394,30 @@ If we consider that the value given by $f(z(t), t, \theta)$ is the derivative of
 \label{cauchypb}
 \begin{cases}
 \frac{\partial z}{\partial t}(t) =  f(z(t), t; \theta) \\
-z(0) =  x
+z(t_0) =  x
 \end{cases}
 \end{equation}
 
 
 \subsection{Forward pass}
 
-Layers in an ODE-Net are implicit. The output $z(t)$ of a layer in an ODE-Net is defined by the Cauchy problem (\ref{cauchypb}).
+The layer in an ODE-Net is implicit. The output $z(t_N)$ of an ODE-Net with the input $z(t_0)$ is defined by the Cauchy problem (\ref{cauchypb}). We see that the Cauchy problem depends on the parameters $z(t_0),t_0,t_N,\theta$.
 
-But how do we find the solution to this ODE, i.e. the output? We can simply use an ODE Solver. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in Section \ref{rnn}.
+But how do we solve this problem? We can simply use an ODE Solver with the parameters given above. In the case of the Euler method, the result is equivalent to a residual neural network, as we saw in Section \ref{rnn}.
 
 To be able to use an ODE solver we have to make sure that the function satisfies the hypotheses in the theorem of existence and uniqueness (cf Section \ref{exiunique}). For example, if the activation function used in the network is ReLu, we can't apply the theorem since it is not differentiable at $0$.
 
 \subsection{Backward pass: the Adjoint method}
-Now that we know how to calculate the output from the input and the parameter $\theta$, we need a method to find the optimal $\theta$ that minimize the loss function.
+Now that we know how to calculate the output of an ODE-Net, we need a method to find the optimal parameters that minimize the loss function.
 
 In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the \textit{adjoint method}. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
 
-Let $L$ be a loss function. To minimize this loss function $L$, we need gradients with respect to the parameters $\theta$. To achieve that, we first need to determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is
+Let $L$ be a loss function. To minimize this loss function $L$, we need gradients with respect to the parameters $z(t_0),t_0,t_N,\theta$. To achieve that, we first need to determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is
 \begin{equation}
 a(t)= \frac{\partial L}{\partial z(t)}
 \end{equation}
 
-This quantity is called the \textit{adjoint}. We would like to determine its dynamics, so we need to compute its derivative with respect to $t$. \footnote{Here we see the vectors as row vectors.}
+This quantity is called the \textit{adjoint}. We would like to determine its dynamics, so we need to compute its derivative with respect to $t$.
 
 With a continuous hidden state, we can write the transformation after an $\varepsilon$ change in time as :
 \begin{equation}
@@ -450,49 +450,43 @@ We can now compute the derivative of $a(t)$ :
 We now have the dynamics of $a(t)$
 \begin{equation}
 \label{dynat}
-\frac{\partial a(t)}{\partial t} = -a(t)^T\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
+\frac{\partial a(t)}{\partial t} = -a(t)\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
 \end{equation}
-%TODO regarder d'où sort la transposée
  
-We need to solve an ODE for the adjoint backwards in time. The constraint on the last time point, which is simply the gradient of the loss with respect to this point, has to be specified:
+As we are searching for $ a(t_0) = \frac{\partial L}{\partial z(t_0)}$, we need to solve an ODE for the adjoint backwards in time because the value for $a(t_N)$ is already known. The constraint on the last time point, which is simply the gradient of the loss with respect to $z(t_N)$, 
 \begin{equation*}
-a(t_N) = \frac{\partial L}{\partial z(t_N)}
+a(t_N) = \frac{\partial L}{\partial z(t_N)},
 \end{equation*}
-
-Then, the gradients with respect to the hidden state can be calculated at any time, including the initial value:
+has to be specified to the ODE solver. Then, the gradients with respect to the hidden state can be calculated at any time, including the initial value. We have 
 
 \begin{eqnarray*}
 a(t_0) &=& a(t_N) + \int^{t_0}_{t_N} \frac{\partial a(t)}{\partial t} dt \text{ by the fondamental theorem of calculus}\\
-	   &=& a(t_N) - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)} dt \text{ par (\ref{dynat})}
+	   &=& a(t_N) - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t,\theta)} {\partial z(t)} dt \text{ par (\ref{dynat})}.
 \end{eqnarray*}
-
-
-If we want to compute the gradients with respect to the parameters $\theta$, we have to evaluate another integral, which depends on both $z(t)$ and $a(t)$:
+If we want to compute the gradient with respect to the parameters $\theta$, we have to evaluate another integral, which depends on both $z(t)$ and $a(t)$,
 \begin{equation}
 \label{devtheta}
-\frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt
+\frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt.
 \end{equation}
-
-
-To avoid computing each ODE on its own, we can do all of them at the same time. To do that we can generalize the ODE to:
+To avoid computing each ODE on its own, we can do all of them at the same time. To do that we can generalize the ODE to
 \begin{eqnarray*}
 \frac{\partial}{\partial t} \begin{bmatrix}
 							z \\ \theta \\ t
 							\end{bmatrix} (t) 
-= f_{aug}([z,\theta ,t]) := \begin{bmatrix}
-							f([z,\theta ,t]) \\ 0 \\ 1
+= f_{aug}([z(t),\theta ,t]) := \begin{bmatrix}
+							f([z(t),\theta ,t]) \\ 0 \\ 1
 							\end{bmatrix}, \\
-a_{aug} := \begin{bmatrix}
+a_{aug} (t) := \begin{bmatrix}
 			a \\ a_{\theta} \\ a_t
-			\end{bmatrix}, \ 
+			\end{bmatrix} (t) , \ 
 a(t) = \frac{\partial L}{\partial z(t)}, \ 
 a_\theta (t) = \frac{\partial L}{\partial \theta (t)}, \ 
 a_t(t) := \frac{\partial L}{\partial t(t)}.
 \end{eqnarray*}
 
-The jacobian of $f$ has the form:
+The jacobian of $f$ has the form
 \begin{equation*}
-\frac{\partial f_{aug}}{\partial [z,\theta,t]} = \begin{bmatrix}
+\frac{\partial f_{aug}}{\partial [z(t),\theta,t]}([z(t),\theta,t]) = \begin{bmatrix}
 \frac{\partial f}{\partial z} & \frac{\partial f}{\partial \theta} & \frac{\partial f}{\partial t} \\
 \textbf{0} & \textbf{0} & \textbf{0} \\
 \textbf{0} & \textbf{0} & \textbf{0}
@@ -501,56 +495,48 @@ The jacobian of $f$ has the form:
 
 where each \textbf{0} is a matrix of zeros with the corresponding dimensions.
 
-We can use $a_{aug}$ in (\ref{dynat}) and we get:
+We can inject $a_{aug}$ in (\ref{dynat}) and we get
 \begin{eqnarray*}
 \frac{\partial a_{aug}(t)}{\partial t} 
-&=& - [a(t) \ a_\theta (t) \ a_t (t)]\frac{\partial f_{aug}}{\partial [ z,\theta , t]}(t) \\
-&=& -\Big[a\frac{\partial f}{\partial z} \ a\frac{\partial f}{\partial \theta} \ a\frac{\partial  f}{\partial t}\Big] (t)
+&=& - [a(t) \ a_\theta (t) \ a_t (t)]\frac{\partial f_{aug}}{\partial [ z(t),\theta , t]}([z(t),\theta , t]) \\
+&=& -\Big[a\frac{\partial f}{\partial z} \ a\frac{\partial f}{\partial \theta} \ a\frac{\partial  f}{\partial t}\Big] (t).
 \end{eqnarray*}
 
 
-We can see that the first element is the adjoint differential equation that we calculated previously in (\ref{dynat}). The total gradient with respect to the parameters is given by integrating the second element over the full interval and by setting $a_\theta (t_N) = \textbf{0}$. We obtain :
+We can see that the first component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial z(t)}$, is the adjoint differential equation that we calculated previously in (\ref{dynat}). The total gradient with respect to the parameters is given by integrating the second component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial \theta(t)}$ over the full interval and by setting $a_\theta (t_N) = \textbf{0}$. We obtain 
 \begin{equation*}
-\frac{\partial L}{\partial \theta} = a_\theta (t_0) = - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial \theta} dt
+\frac{\partial L}{\partial \theta} = a_\theta (t_0) = - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial \theta} dt.
 \end{equation*}
 
 %sans a(tn) = 0 , on a a(tn) - integrale non ?
 
-We can also get gradients with respect to $t_0$ and $t_N$ by integrating the last element and by the Chain rule respectively.
+We can also get gradients with respect to $t_0$ and $t_N$ by integrating the last component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial t(t)}$, and by the Chain rule respectively. We have
 \begin{eqnarray*}
-\frac{\partial L}{\partial t_0} &=& a_t(t_0) = a_t(t_N) - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial t} dt \\
-\frac{\partial L}{\partial t_N} &=& \frac{\partial L}{\partial z(t_N)} \frac{\partial z(t_N)}{\partial t_N} = a(t_N)f(z(t_N),t_N,\theta)
+\frac{\partial L}{\partial t_0} &=& a_t(t_0) = a_t(t_N) - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial t} dt ; \\
+\frac{\partial L}{\partial t_N} &=& \frac{\partial L}{\partial z(t_N)} \frac{\partial z(t_N)}{\partial t_N} = a(t_N)f(z(t_N),t_N,\theta).
 \end{eqnarray*}
-With this generalized method, we have gradients for all possible inputs to a Cauchy problem solver.
+With this generalized method, we have gradients for all possible inputs to a Cauchy problem solver. In the development above, we assumed that the loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
 
-
-% The vector-Jacobian products $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial z(t)}$ and $a(t)^T \frac{\partial f(z(t),t,\theta)} {\partial \theta}$ can be efficiently evaluated by automatic differentiation, at a time cost similar to that of evaluating $f$. All integrals for solving $z, a$ and $\frac{\partial L}{\partial \theta}$ can be computed in a single call to an ODE solver, which concatenates the original state, the adjoint, and the other partial derivatives into a single vector.
-
-In the development above, we assumed that the loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
-
-In practice, most ODE solvers have the option to output the state $z(t)$ at multiple times. When the loss depends on these intermediate states, the reverse-mode derivative must be broken into a sequence of separate solves, one between each consecutive pair of output times. At each observation, the adjoint must be adjusted in the direction of the corresponding partial derivative $\frac{\partial L}{\partial z(t_i)}$.
-
-
-\subsection{Example}
-
-ODE-Net are very useful but they can't approximate any function. 
-For example, the simple function $f(x) = x^2$ can't be approximated by an ODE-Net because it's not a bijective function.
-
-As we can see in figure \ref{x2}, the network have a problem with negative numbers: the lines can't cross and that causes the negative values to be mapped to $0$.
-\begin{figure}[!h]
-\center
-\label{x2}
-\includegraphics[scale=0.45]{x2graphe.png}
-\caption{Evolution of the output from the ODE-Net w.r.t. the depth}
-\end{figure}
-
-On the other hand, ResNets have no problem approximating this type of function.
-
-\begin{figure}[!h]
-\center
-\includegraphics[scale=0.45]{x2gres.png}
-\caption{Evolution of the output from the ResNet w.r.t. the depth}
-\end{figure}
+%\subsection{Example}
+%
+%ODE-Net are very useful but they can't approximate any function. 
+%For example, the simple function $f(x) = x^2$ can't be approximated by an ODE-Net because it's not a bijective function.
+%
+%As we can see in figure \ref{x2}, the network have a problem with negative numbers: the lines can't cross and that causes the negative values to be mapped to $0$.
+%\begin{figure}[!h]
+%\center
+%\label{x2}
+%\includegraphics[scale=0.45]{x2graphe.png}
+%\caption{Evolution of the output from the ODE-Net w.r.t. the depth.}
+%\end{figure}
+%
+%On the other hand, ResNets have no problem approximating this type of function.
+%
+%\begin{figure}[!h]
+%\center
+%\includegraphics[scale=0.45]{x2gres.png}
+%\caption{Evolution of the output from the ResNet w.r.t. the depth}
+%\end{figure}
 
 \subsection{Advantages and disadvantages of ODE-Nets}
 
