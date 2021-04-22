@@ -1,6 +1,6 @@
 \documentclass[10pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[french]{babel}
+\usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -35,13 +35,7 @@ In this document, we introduce ODE-nets, which are deep neural networks models u
 
 \noindent At the end, we'll conclude with the advantages and disadvantages of ODE-nets.
 
-
-\section{Ordinary Differential Equations}
-
-\subsection{A reminder on ordinary differential equations}
-
-An\textit{ ordinary differential equation} (ODE) is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
-
+\subsection{Reminders}\label{reminders}
 
 \begin{definition}
 Let   $$\begin{array}{rclc}
@@ -59,6 +53,32 @@ $$
 \frac{\partial f}{\partial x_i}(a) = \lim_{h\rightarrow0}\frac{f(a_1,\dots , a_{i-1}, a_i + h, a_{i+1}, \dots a_n) - f(a_1,\dots, a_i,\dots, a_n)}{h}.
 $$
 \end{definition}
+
+\begin{definition}
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function and $a\in \mathbb{R}^n$.
+We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
+$$
+f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2).
+$$
+\end{definition}
+
+\begin{definition}
+Le $f: \mathbb{R}^n \rightarrow \mathbb{R}$ be function, $n\geq 2$. Then $f$ is \textit{convex} if and only if
+$$
+\forall 0\leq t \leq 1, \forall x_1,x_2\in \mathbb{R}^n, \ \ \ f(tx_1 + (1-t)x_2) \leq tf(x_1) + (1-t)f(x_2)
+$$
+\end{definition}
+
+\begin{definition}
+If $f$ and $g$ are differentiable functions, then the \textit{chain rule} expresses the derivative of their composite $f \circ g$ in terms of the derivatives of $f$ and $g$ and the product of functions as follows:
+$$
+\frac{\partial f \circ g}{\partial x} = \Big(\frac{\partial f}{\partial x} \circ g\Big)\frac{\partial g}{\partial x}
+$$
+\end{definition}
+
+\section{Ordinary Differential Equations}
+
+An\textit{ ordinary differential equation} (ODE) is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
 
 \begin{definition}
 Let $\Omega \subseteq \mathbb{R} \times \mathbb{R}^N$ an open set. Let $f: \Omega \rightarrow \mathbb{R}^N$. 
@@ -154,7 +174,7 @@ $$
 To compute those points, we use \textit{one-step methods} which compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
 
 \subsection{Euler's method} \label{euler}
-Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development \footnote{See the annex.}, the idea is to compute $u(t_{i+1})$ using the formula
+Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development (q.v. \ref{reminders}), the idea is to compute $u(t_{i+1})$ using the formula
 $$
 u(t_{i+1}) \approx u(t_i) + h\frac{\partial u}{\partial t}(t_i)
 $$
@@ -576,57 +596,94 @@ The dynamics of the ODE-Net is specified by a layer of size $20$. After $1000$ i
 
 The green points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ODE-Net.
 
-
+We can compare these results with those we had for the ResNet, we can see that the ResNets is slightly better with these parameters. The comparison graph is in the Figure \ref{comparaison}.
+\begin{figure}[!h]
+\center
+\includegraphics[scale=0.45]{comparaison.png}
+\caption{Comparison of ResNet and ODE-Net}
+\label{comparaison}
+\end{figure}
 
 \subsection{Advantages and disadvantages of ODE-Nets}
 
-
+\subsubsection*{Advantages}
 \begin{itemize}
-\item The biggest advantage of ODE-Nets is that they have more accurate results for time series predictions. Regular neural network have discrete layers, which means they expect the intervals for these time series data sets to be fixed. Therefore, they are bad at predicting output for time series data that is irregular.
-\item They have a faster testing time than regular networks, but a slower training time. There is a trade-off between precision and speed. However, regular neural networks can be evaluated with a fixed amount of computation, and are typically faster to train. In this case, we don't have to choose an error tolerance for a solver.
-\item We can use ordinary differential equations solvers instead of gradient descent. These solvers have more than a hundred years of theory behind them.
-\item Lastly, there's a constant memory cost, instead of increasing the cost linearly with each layer in a regular network.
+\item \textit{Continuous time series predictions}
+
+The biggest advantage of ODE-Nets is that they have more accurate results for time series predictions. Regular neural network have discrete layers, which means they expect the intervals for these time series data sets to be fixed whereas ODE-Net have a continuous layer which means we can evaluate the hidden states at every point $t$ in time. Therefore, regular neural networks are bad at predicting output for time series data that is irregular.
+
+\item \textit{ODE solvers}
+
+We can use ordinary differential equations solvers instead of gradient descent. These solvers have more than a hundred years of theory behind them which is a great advantage against gradient descent.
+
+\item \textit{Robustness}
+
+After experimenting, it was proved that ODE-Net are very robust against perturbed data compared to regular neural network. Two experiments were conducted: in the first one they trained an ODE-Net and a convolutional neural network\footnote{A neural network that is usually good with images.} on real images without perturbations. They tested these models on the original images and the ODE-Net outperformed the CNN In the second experiment, they trained these networks on the original and perturbed images. Again, the ODE-Net was much better.
+
+\item \textit{Constant memory cost}
+
+Lastly, there's a constant memory cost, instead of increasing the cost linearly with each layer in a regular network. 
+In ODE-Net, we know the state at every time $t$. Because of that, we can always reconstruct the entire trajectory of an ODE forwards and backwards in time only by knowing this point. This means that ODE-Nets can be trained with a memory cost constant in the number of evaluations of $f$.
+There is a trade-off between memory cost and computational time: ResNets are faster but use more memory and ODE-Net are slower but use less memory.
 \end{itemize}
 
-\newpage
+\subsubsection*{Disadvantages}
+\begin{itemize}
+\item \textit{Slower training time}
+
+ODE-Net have a slower training time. Indeed, during training, the dynamics we want to learn tend to become expensive to solve since the network becomes deeper. However, regular neural networks can be evaluated with a fixed amount of computation, and are typically faster to train. In this case, we don't have to choose an error tolerance for a solver.
+
+There is then a trade-off between accuracy and computational time: if we choose a small error tolerance, then the computational time be bigger.
+
+\item \textit{More Hyperparameters}
+
+In ODE-Nets we need to choose a solver and its error tolerance, which induces more choices to find the parameters which works better.
+
+\item \textit{Restriction on activation functions}
+
+To ensure that the ODE has a solution we have to make sure the dynamics are uniformly continuous Lipschitz (q.v. Theorem \ref{exiunique}). This is why we mostly use $tanh$ as an activation function.
+\end{itemize}
+
 \section{References}
 \begin{itemize}
-\item  \textit{Neural Ordinary Differential Equations}, Ricky T. Q. Chen, Yulia Rubanova, Jesse Bettencourt, David Duvenaud.
+\item  Ricky T. Q. Chen, Yulia Rubanova, Jesse Bettencourt, David Duvenaud \textit{Neural Ordinary Differential Equations}.
 
 \url{https://arxiv.org/pdf/1806.07366.pdf}
-\item \textit{Deep Implicit Layers - Neural ODEs, Deep Equilibirum Models, and Beyond}, Zico Kolter, David Duvenaud, and Matt Johnson.
+
+\item Zico Kolter, David Duvenaud, and Matt Johnson, \textit{Deep Implicit Layers - Neural ODEs, Deep Equilibirum Models, and Beyond}.
 
 \url{https://implicit-layers-tutorial.org/}
-\item\textit{Stanford CS229: Machine Learning | Autumn 2018}
 
-\url{https://www.youtube.com/playlist?list=PLoROMvodv4rMiGQp3WXShtMGgzqpfVfbU}
-\item \textit{Neural Ordinary Differential Equation (Neural ODE)}, Ayan Das
+
+
+\item  Ayan Das, \textit{Neural Ordinary Differential Equation (Neural ODE)}.
 
 \url{https://ayandas.me/blog-tut/2020/03/20/neural-ode.html}
+
+\item Hanshu Yan, Jiawei Du, Vincent Tan, Jiashi Feng, \textit{On Robustness of Neural Ordinary Differential Equations}.
+
+\url{https://openreview.net/forum?id=B1e9Y2NYvS}
+
+\item Amer Zayegh, Nizar Al Bassam, \textit{Neural Network Principles and Applications}.
+
+\url{https://www.researchgate.net/publication/329264107_Neural_Network_Principles_and_Applications}
+
 \item Neural ODEs Introduction
 
 \url{https://www.youtube.com/watch?v=uPd0B0WhH5w}
+
+\item  Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani, \textit{An Introduction to Statistical Learning with Applications in R}. Springer.
+
+\item\textit{Stanford CS229: Machine Learning | Autumn 2018}, Lecture 11, 12, 13.
+
+\url{https://www.youtube.com/playlist?list=PLoROMvodv4rMiGQp3WXShtMGgzqpfVfbU}
+
+\item  Christophe Troestler, \guillemotleft Analyse Numérique \guillemotright, UMONS, 2018-2019
+
+
 \end{itemize}
 
-\newpage
-\section{Annex}
-\begin{definition}
-Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function and $a\in \mathbb{R}^n$.
-We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
-$$
-f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2).
-$$
-\end{definition}
-\begin{definition}
-If $f$ and $g$ are differentiable functions, then the \textit{chain rule} expresses the derivative of their composite $f \circ g$ in terms of the derivatives of $f$ and $g$ and the product of functions as follows:
-$$
-\frac{\partial f \circ g}{\partial x} = \Big(\frac{\partial f}{\partial x} \circ g\Big)\frac{\partial g}{\partial x}
-$$
-\end{definition}
-\begin{definition}
-Le $f: \mathbb{R}^n \rightarrow \mathbb{R}$ be function, $n\geq 2$. Then $f$ is \textit{convex} if and only if
-$$
-\forall 0\leq t \leq 1, \forall x_1,x_2\in \mathbb{R}^n, \ \ \ f(tx_1 + (1-t)x_2) \leq tf(x_1) + (1-t)f(x_2)
-$$
-\end{definition}
+
+
+
 \end{document}
