@@ -9,6 +9,7 @@
 \usepackage{dsfont}
 
 \usepackage{hyperref}
+\usepackage{cite}
 
 
 \usepackage{graphicx}
@@ -34,51 +35,12 @@
 In this document, we introduce ODE-nets, which are deep neural networks models using ordinary differential equations. We focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, implicit layers, ... 
 
 \noindent At the end, we'll conclude with the advantages and disadvantages of ODE-nets.
+The code use to make the examples can be found at \url{https://github.com/DumezErika/ProjetMachineLearning}.
 
-\subsection{Reminders}\label{reminders}
-
-\begin{definition}
-Let   $$\begin{array}{rclc}
-f: & \mathbb{R}^n & \rightarrow &  \mathbb{R}^m \\
-&x = (x_1, \dots, x_n) & \mapsto & f(x_1, \dots, x_n)
-\end{array}$$ be a function.
-
-The \textit{partial derivative} of $f$ with respect to the variable $x_i$ is denoted by
-$$
-\frac{\partial f}{\partial x_i} :\mathbb{R}^n \rightarrow \mathbb{R}^m.
-$$
-
-For $a\in \mathbb{R}^n$, the partial derivative of $f$ with respect to $x_i$, if it exists, is defined as
-$$
-\frac{\partial f}{\partial x_i}(a) = \lim_{h\rightarrow0}\frac{f(a_1,\dots , a_{i-1}, a_i + h, a_{i+1}, \dots a_n) - f(a_1,\dots, a_i,\dots, a_n)}{h}.
-$$
-\end{definition}
-
-\begin{definition}
-Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function and $a\in \mathbb{R}^n$.
-We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
-$$
-f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2).
-$$
-\end{definition}
-
-\begin{definition}
-Le $f: \mathbb{R}^n \rightarrow \mathbb{R}$ be function, $n\geq 2$. Then $f$ is \textit{convex} if and only if
-$$
-\forall 0\leq t \leq 1, \forall x_1,x_2\in \mathbb{R}^n, \ \ \ f(tx_1 + (1-t)x_2) \leq tf(x_1) + (1-t)f(x_2)
-$$
-\end{definition}
-
-\begin{definition}
-If $f$ and $g$ are differentiable functions, then the \textit{chain rule} expresses the derivative of their composite $f \circ g$ in terms of the derivatives of $f$ and $g$ and the product of functions as follows:
-$$
-\frac{\partial f \circ g}{\partial x} = \Big(\frac{\partial f}{\partial x} \circ g\Big)\frac{\partial g}{\partial x}
-$$
-\end{definition}
 
 \section{Ordinary Differential Equations}
 
-An\textit{ ordinary differential equation} (ODE) is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
+An\textit{ ordinary differential equation} (ODE) \cite{9} is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
 
 \begin{definition}
 Let $\Omega \subseteq \mathbb{R} \times \mathbb{R}^N$ an open set. Let $f: \Omega \rightarrow \mathbb{R}^N$. 
@@ -174,48 +136,48 @@ $$
 To compute those points, we use \textit{one-step methods} which compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
 
 \subsection{Euler's method} \label{euler}
-Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development (q.v. \ref{reminders}), the idea is to compute $u(t_{i+1})$ using the formula
-$$
+Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development (q.v. Section \ref{annex}), the idea is to compute $u(t_{i+1})$ using the formula
+\begin{equation}\label{eqeuler}
 u(t_{i+1}) \approx u(t_i) + h\frac{\partial u}{\partial t}(t_i)
-$$
+\end{equation}
 where 
 $$
 \frac{\partial u}{\partial t}(t_i) = f(t_i, u(t_i)).
 $$
 
 
-\section{Machine Learning}
-In a typical machine learning problem, we have an output variable $Y$ to $p$ predictors $X_1,\dots, X_p$, also called input variable, where $p\in \mathbb{N}\backslash \{0\}$. The inputs belongs to an input space $\mathcal{X}$ and usually $\mathcal{X} \subset \mathbb{R}^p$. The output belongs to a output space $\mathcal{Y}$. It depends on the problem, for example: if this is a regression problem, $\mathcal{Y} \subset \mathbb{R}$. But if we have a classification problem with $K$ categories, $\mathcal{Y} = \{1,2,\dots, K\}$.
+\section{Neural Networks}
+In a typical machine learning problem \cite{10}, we have an output variable $Y$ to $p$ predictors $X_1,\dots, X_p$, also called input variable, where $p\in \mathbb{N}\backslash \{0\}$. The inputs belongs to an input space $\mathcal{X}$ and usually $\mathcal{X} \subset \mathbb{R}^p$. The output belongs to a output space $\mathcal{Y}$. It depends on the problem, for example: if this is a regression problem, $\mathcal{Y} \subset \mathbb{R}$. But if we have a classification problem with $K$ categories, $\mathcal{Y} = \{1,2,\dots, K\}$.
 
 Let's assume that there is some relationship between $Y$ and $X = (X_1,\dots, X_p)$, which can be written in the general form
 $$
 Y = f(X) + \epsilon.
 $$
-Here $f$ is some fixed but unknown function, called \textit{target function}, of $X_1, \dots, X_p$ and $\epsilon$ is a random error term which is independent of $X$ and has mean zero.
+Here $f$ is some fixed but unknown function, called \textit{target function}, of $X_1, \dots, X_p$ and $\epsilon$ is a random error term which is independent of $X$ and has mean zero and finite variance.
 
 The goal of machine learning is to estimate this function $f$ as precisely as possible. To do that, we need a \textit{data set} to learn. The data is a set of $n$ points in $\mathcal{X} \times \mathcal{Y}$
 $$
 \mathcal{D} = \{(x_1, y_1),\dots, (x_n,y_n)\}.
 $$
 
-We can predict $Y$ using
+Let $x$ be a data point, then we can predict its output $y$ using 
 $$
-\hat{Y} = \hat{f}(X),
+\hat{y} = \hat{f}(x),
 $$
-where $\hat{f}$ represents our estimate for $f$, and $\hat{Y}$ represents the resulting prediction for $Y$.
+where $\hat{f}$ represents our estimate for $f$, and $\hat{y}$ represents the resulting prediction for $y$.
 
 To determine the precision of an estimation $\hat{f}$, we use a \textit{loss function}, which is a function of a prediction and the output given by the target function. Some example of loss functions are
 \begin{itemize}
-\item Square error loss: $L_1(y, \hat{y}) = (y-\hat{y})^2$;
-\item Absolute error loss: $L_2(y, \hat{y}) = |y - \hat{y}|$;
-\item Zero-one loss: $L_3(y, \hat{y}) = \mathds{1}_{\{(y, \hat{y}) | y\neq \hat{y}\}}(y, \hat{y})$.
+\item Square error loss: $\mathcal{L}(y, \hat{y}) = (y-\hat{y})^2$;
+\item Absolute error loss: $\mathcal{L}(y, \hat{y}) = |y - \hat{y}|$;
+\item Zero-one loss: $\mathcal{L}(y, \hat{y}) = \mathds{1}_{\{(y, \hat{y}) | y\neq \hat{y}\}}(y, \hat{y})$.
 \end{itemize}
 
 
-\subsection{Neural networks}
+\subsection{Definition}
 
 
-\noindent A \textit{neural network} can be used to solve a machine learning problem. It consists of a series of layers. There are three types of layers :
+\noindent A \textit{neural network} \cite{8} can be used to solve a machine learning problem. It consists of a series of layers. There are three types of layers :
 
 \begin{itemize}
 \item The \textit{input} layer
@@ -249,7 +211,7 @@ The goal is to minimize the error for every input. To do that, we need to find t
 \subsection{Back propagation}
 Let $\theta$ be the parameters of the network. We want to find $\theta$ which minimize the loss function in order to have the error as small as possible. Therefore, we need to determine the partial derivative of the loss function with respect to the parameters, $\frac{\partial L}{\partial \theta}$. Indeed, we know that if the partial derivative of a function is $0$ at a certain point, then this point is a local extremum. 
 
-Backpropagation is the process used to compute this derivative. It works by computing the gradient of the loss function with respect to each parameter by the chain rule, computing the gradient one layer at a time, iterating backward from the final layer to avoid redundant calculations of intermediate terms in the chain rule.
+Backpropagation \cite{11} is the process used to compute this derivative. It works by computing the gradient of the loss function with respect to each parameter by the chain rule, computing the gradient one layer at a time, iterating backward from the final layer to avoid redundant calculations of intermediate terms in the chain rule.
 
 \subsection{Example} \label{exnn}
 Let's consider a neural network with one hidden layer that takes a two-dimensional input $x = (x_1, x_2)$ and gives a 2-dimensional output $\hat{y} = (\hat{y_1},\hat{y_2})$. We can represent this network with the following equations:
@@ -267,7 +229,7 @@ We can now use the backpropagation algorithm to easily compute $\frac{\partial \
 
 \begin{figure}
 \center
-\includegraphics[scale=0.3]{computation_graph.png}
+\includegraphics[scale=0.5]{computation_graph.png}
 \caption{Computation graph}
 \end{figure}
 
@@ -284,7 +246,7 @@ We can now use the backpropagation algorithm to easily compute $\frac{\partial \
 
 \subsection{Gradient descent}
 
-\textit{Gradient descent} is a process used to find a local minimum of a differentiable function. It works as follow: at each step of the process, we take a step in the opposite direction of the gradient of the function at the current point, because this is the direction of the steepest descent.
+\textit{Gradient descent} \cite{10} is a process used to find a local minimum of a differentiable function. It works as follow: at each step of the process, we take a step in the opposite direction of the gradient of the function at the current point, because this is the direction of the steepest descent.
 
 More formally, if we have a function $f: \mathbb{R}^n \rightarrow \mathbb{R}$, $n>1$, differentiable and a point $x_0\in \mathbb{R}^n$, we have that if
 $$
@@ -292,7 +254,7 @@ x_{n+1} = x_n -\gamma_n \nabla f(x_n), n\geq 0
 $$
 for $\gamma_n \in \mathbb{R}^+$ small enough, then $f(x_n) \geq f(x_{n+1})$. 
 
-We get a sequence $x_0,x_1,\dots$ that hopefully converges to the desired local minimum, such that
+We get a sequence $x_0,x_1,\dots$ that converges to the desired local minimum under some conditions (q.v. Annex: theorem \ref{thmconvgd}), such that
 $$
 f(x_0) \geq f(x_1) \geq \dots . 
 $$
@@ -305,15 +267,13 @@ The problem when using the gradient descent algorithm on neural network is that 
 
 One example of this problem is when we use the hyperbolic tangent as activation function. Because this function has gradients in the range $]0,1[$ and backpropagation computes gradients by the chain rule, we multiply several of these small numbers which leads the gradient to decrease exponentially. The deeper is the neural network, the more likely this problem can occur.
 
-~
-
 The exploding gradient problem is the opposite, it happens when the derivatives take on larger values.
 
 %TODO regarder à comment expliquer formellement, peut-être un exemple et des dessins? 
 
 \subsection{Residual neural network} \label{rnn}
 
-A\textit{ residual neural network}, also called ResNet, is simply a regular neural network except that it has more connections. Not only do we feed the output of the previous layer to the next, but also the input of that layer. 
+A\textit{ residual neural network} \cite{6}, also called ResNet, is simply a regular neural network except that it has more connections. Not only do we feed the output of the previous layer to the next, but also the input of that layer. 
 An example of the representation of a ResNet is given in Figure \ref{exampleresnet}.
 
 In these networks, the output of the $k+1$th layer is given by
@@ -326,7 +286,7 @@ We can see that this simple formula is a special case of the formula
 \begin{equation*}
 x_{k+1} = x_k + hf_k(x_k),
 \end{equation*}
-which is the formula for the Euler method for solving ODEs when $h = 1$. It is with this observation that we can later introduce neural ODE networks (Section \ref{neuralode}).
+which is the formula for the Euler method for solving ODEs when $h = 1$ (see equation (\ref{eqeuler})). It is with this observation that we can later introduce neural ODE networks (Section \ref{neuralode}).
 
 \begin{figure}
 \center
@@ -355,7 +315,7 @@ where $\varepsilon$ is a noise variable with mean $0$ and standard deviation $1$
 
 We train a ResNet with $3$ layers, the hidden one having $20$ neurons. After $1000$ iteration, we get the function given in Figure \ref{example_resnet}.
 
-\begin{figure}
+\begin{figure}[!h]
 \center
 \includegraphics[scale=0.4]{ex_resnet.png}
 \caption{Result of the training for the ResNet}
@@ -367,7 +327,7 @@ The green points represent the data used for the training, the blue line is the 
 
 \subsection{Implicit Layers}
 
-There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{exnn}. 
+There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly} \cite{2}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer like in the example of the section \ref{exnn}. 
 
 However, when we add some functionality to the layers, it can become complex to define them explicitly. Instead, we can define them implicitly: we specify the condition we want the layer's output to satisfy. 
 
@@ -401,7 +361,7 @@ An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow
 
 In a residual neural network, the output for an input $x$ is a composition of functions. We want to extract all these individual layers to only have one "shared" layer.
 
-A \textit{neural ODE network} (or ODE-Net) takes a simple layer as a building block. This “base layer” is going to specify the dynamics of an ODE.
+A \textit{neural ODE network} (or ODE-Net) \cite{1,2,3,6} takes a simple layer as a building block. This “base layer” is going to specify the dynamics of an ODE.
 ODE-Net enable us to replace layers of neural networks with a continuous-depth model. This means that we do not need to specify the number of layers beforehand.
 
 Let us return to ResNets to give intuition behind this definition. We know that any output of the $k^{th}$ layer of a residual network can be computed with the function
@@ -450,11 +410,11 @@ To be able to use an ODE solver we have to make sure that the function satisfies
 \subsection{Backward pass: the Adjoint method}
 Now that we know how to calculate the output of an ODE-Net, we need a method to find the optimal parameters that minimize the loss function.
 
-In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the \textit{adjoint method}. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
+In regular neural networks, we usually use the gradient descent. However in our case, it is more difficult because we used an ODE solver in the forward pass which is some sort of black box. This is why we are introducing the \textit{adjoint method} \cite{1}. This method computes the gradient by solving a second ODE backwards and is applicable to all ODE solvers.
 
-Let $L$ be a loss function. To minimize this loss function $L$, we need gradients with respect to the parameters $z(t_0),t_0,t_N,\theta$. To achieve that, we first need to determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is
+Let $\mathcal{L} : \mathbb{R}^p \rightarrow \mathbb{R}$ be a loss function. To minimize this loss function $\mathcal{L}$, we need gradients with respect to the parameters $z(t_0),t_0,t_N,\theta$. To achieve that, we can determine how the gradient of the loss depends on the hidden state $z(t)$ for each $t$, which is
 \begin{equation}
-a(t)= \frac{\partial L}{\partial z(t)}
+a(t)= \frac{\partial \mathcal{L}}{\partial z(t)}
 \end{equation}
 
 This quantity is called the \textit{adjoint}. We would like to determine its dynamics, so we need to compute its derivative with respect to $t$.
@@ -467,7 +427,7 @@ z(t+\varepsilon) = \int^{t+\varepsilon}_{t} f(z(t),t,\theta) dt + z(t)
 % car f(..) = d(z) et z(1) = z(0) + z(1) - z(0)
 Let $ G : \varepsilon \mapsto z(t+\varepsilon)$. We can apply the Chain rule and we have 
 \begin{equation*}
-\frac{\partial L}{\partial z(t)} = \frac{\partial L}{\partial z(t+\varepsilon)} \frac{\partial z(t+\varepsilon)}{\partial z(t)}.
+\frac{\partial \mathcal{L}}{\partial z(t)} = \frac{\partial \mathcal{L}}{\partial z(t+\varepsilon)} \frac{\partial z(t+\varepsilon)}{\partial z(t)}.
 \end{equation*}
 In other words 
 \begin{equation}
@@ -495,7 +455,7 @@ We now have the dynamics of $a(t)$
  
 As we are searching for $ a(t_0) = \frac{\partial L}{\partial z(t_0)}$, we need to solve an ODE for the adjoint backwards in time because the value for $a(t_N)$ is already known. The constraint on the last time point, which is simply the gradient of the loss with respect to $z(t_N)$, 
 \begin{equation*}
-a(t_N) = \frac{\partial L}{\partial z(t_N)},
+a(t_N) = \frac{\partial \mathcal{L}}{\partial z(t_N)},
 \end{equation*}
 has to be specified to the ODE solver. Then, the gradients with respect to the hidden state can be calculated at any time, including the initial value. We have 
 
@@ -519,9 +479,9 @@ To avoid computing each ODE on its own, we can do all of them at the same time. 
 a_{aug} (t) := \begin{bmatrix}
 			a \\ a_{\theta} \\ a_t
 			\end{bmatrix} (t) , \ 
-a(t) = \frac{\partial L}{\partial z(t)}, \ 
-a_\theta (t) = \frac{\partial L}{\partial \theta (t)}, \ 
-a_t(t) := \frac{\partial L}{\partial t(t)}.
+a(t) = \frac{\partial \mathcal{L}}{\partial z(t)}, \ 
+a_\theta (t) = \frac{\partial \mathcal{L}}{\partial \theta (t)}, \ 
+a_t(t) := \frac{\partial \mathcal{L}}{\partial t(t)}.
 \end{eqnarray*}
 
 The jacobian of $f$ has the form
@@ -545,15 +505,15 @@ We can inject $a_{aug}$ in (\ref{dynat}) and we get
 
 We can see that the first component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial z(t)}$, is the adjoint differential equation that we calculated previously in (\ref{dynat}). The total gradient with respect to the parameters is given by integrating the second component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial \theta(t)}$ over the full interval and by setting $a_\theta (t_N) = \textbf{0}$. We obtain 
 \begin{equation*}
-\frac{\partial L}{\partial \theta} = a_\theta (t_0) = - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial \theta} dt.
+\frac{\partial \mathcal{L}}{\partial \theta} = a_\theta (t_0) = - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial \theta} dt.
 \end{equation*}
 
 %sans a(tn) = 0 , on a a(tn) - integrale non ?
 
 We can also get gradients with respect to $t_0$ and $t_N$ by integrating the last component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial t(t)}$, and by the Chain rule respectively. We have
 \begin{eqnarray*}
-\frac{\partial L}{\partial t_0} &=& a_t(t_0) = a_t(t_N) - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial t} dt ; \\
-\frac{\partial L}{\partial t_N} &=& \frac{\partial L}{\partial z(t_N)} \frac{\partial z(t_N)}{\partial t_N} = a(t_N)f(z(t_N),t_N,\theta).
+\frac{\partial \mathcal{L}}{\partial t_0} &=& a_t(t_0) = a_t(t_N) - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial t} dt ; \\
+\frac{\partial \mathcal{L}}{\partial t_N} &=& \frac{\partial \mathcal{L}}{\partial z(t_N)} \frac{\partial z(t_N)}{\partial t_N} = a(t_N)f(z(t_N),t_N,\theta).
 \end{eqnarray*}
 With this generalized method, we have gradients for all possible inputs to a Cauchy problem solver. In the development above, we assumed that the loss function $L$ depends only on the last time point $t_N$. If function $L$ depends also on intermediate time points $t_1, t_2, \dots , t_{N-1}$, we can repeat the adjoint step for each of the intervals $[t_{N-1}, t_N ],[t_{N-2}, t_{N-1}], \dots , [t_0,t_1]$ in the backward order and sum up the obtained gradients.
 
@@ -577,6 +537,15 @@ With this generalized method, we have gradients for all possible inputs to a Cau
 %\includegraphics[scale=0.45]{x2gres.png}
 %\caption{Evolution of the output from the ResNet w.r.t. the depth}
 %\end{figure}
+
+We can represent this process with the Figure \ref{process}. As we can see, during the forward pass, the loss function is evaluated a each time to be able to determine the smallest error.
+\begin{figure}[!h]
+\center
+\includegraphics[scale=0.7]{fig2.png}
+\caption{Graphical representation of the forward and backward pass for the ODE-Net. The figure has been taken from the paper \cite{1}.}
+\label{process}
+\end{figure}
+
 \subsection{Simple Example}
 
 Let's reuse the example for ResNets. We have the function 
@@ -604,6 +573,8 @@ We can compare these results with those we had for the ResNet, we can see that t
 \label{comparaison}
 \end{figure}
 
+\newpage
+
 \subsection{Advantages and disadvantages of ODE-Nets}
 
 \subsubsection*{Advantages}
@@ -616,9 +587,9 @@ The biggest advantage of ODE-Nets is that they have more accurate results for ti
 
 We can use ordinary differential equations solvers instead of gradient descent. These solvers have more than a hundred years of theory behind them which is a great advantage against gradient descent.
 
-\item \textit{Robustness}
+\item \textit{Robustness} \cite{4}
 
-After experimenting, it was proved that ODE-Net are very robust against perturbed data compared to regular neural network. Two experiments were conducted: in the first one they trained an ODE-Net and a convolutional neural network\footnote{A neural network that is usually good with images.} on real images without perturbations. They tested these models on the original images and the ODE-Net outperformed the CNN In the second experiment, they trained these networks on the original and perturbed images. Again, the ODE-Net was much better.
+After experimenting, it was proved that ODE-Net are very robust against perturbed data compared to regular neural network. Two experiments were conducted: in the first one they trained an ODE-Net and a convolutional neural network\footnote{A neural network that is usually good with images.} on real images without perturbations. They tested these models on the original images and the ODE-Net outperformed the CNN. In the second experiment, they trained these networks on the original and perturbed images. Again, the ODE-Net was much better.
 
 \item \textit{Constant memory cost}
 
@@ -644,44 +615,59 @@ In ODE-Nets we need to choose a solver and its error tolerance, which induces mo
 To ensure that the ODE has a solution we have to make sure the dynamics are uniformly continuous Lipschitz (q.v. Theorem \ref{exiunique}). This is why we mostly use $tanh$ as an activation function.
 \end{itemize}
 
+\section{Annex}\label{annex}
+
+\begin{definition}
+Let   $$\begin{array}{rclc}
+f: & \mathbb{R}^n & \rightarrow &  \mathbb{R}^m \\
+&x = (x_1, \dots, x_n) & \mapsto & f(x_1, \dots, x_n)
+\end{array}$$ be a function.
+
+The \textit{partial derivative} of $f$ with respect to the variable $x_i$ is denoted by
+$$
+\frac{\partial f}{\partial x_i} :\mathbb{R}^n \rightarrow \mathbb{R}^m.
+$$
+
+For $a\in \mathbb{R}^n$, the partial derivative of $f$ with respect to $x_i$, if it exists, is defined as
+$$
+\frac{\partial f}{\partial x_i}(a) = \lim_{h\rightarrow0}\frac{f(a_1,\dots , a_{i-1}, a_i + h, a_{i+1}, \dots a_n) - f(a_1,\dots, a_i,\dots, a_n)}{h}.
+$$
+\end{definition}
+
+\begin{definition}
+Let $f: \mathbb{R}^n \rightarrow \mathbb{R}^m$ be a function and $a\in \mathbb{R}^n$.
+We can write the \textit{first-order Taylor's development} for $f$ at $x$ as :
+$$
+f(x + a) = f(x) + a . \partial f(x) + O(\| a\|^2).
+$$
+\end{definition}
+
+\begin{definition}
+Le $f: \mathbb{R}^n \rightarrow \mathbb{R}$ be function, $n\geq 2$. Then $f$ is \textit{convex} if and only if
+$$
+\forall 0\leq t \leq 1, \forall x_1,x_2\in \mathbb{R}^n, \ \ \ f(tx_1 + (1-t)x_2) \leq tf(x_1) + (1-t)f(x_2)
+$$
+\end{definition}
+
+\begin{definition}
+If $f$ and $g$ are differentiable functions, then the \textit{chain rule} expresses the derivative of their composite $f \circ g$ in terms of the derivatives of $f$ and $g$ and the product of functions as follows:
+$$
+\frac{\partial f \circ g}{\partial x} = \Big(\frac{\partial f}{\partial x} \circ g\Big)\frac{\partial g}{\partial x}
+$$
+\end{definition}
+
+\begin{theorem} \label{thmconvgd}
+Si $f : \mathbb{R}^d \to \mathbb{R}$ est une fonction L-Lipschitzienne convexe et si $x^* = argmin_x f(x)$, alors l'algorithme de descente du gradient avec la taille de pas $\eta \leqslant \frac{1}{L}$ satisfait
+$$
+f(x_{k}) \leqslant f(x^*) + \frac{\|x_0 - x^* \|_2}{2\eta k} .
+$$
+\end{theorem}
+
 \section{References}
-\begin{itemize}
-\item  Ricky T. Q. Chen, Yulia Rubanova, Jesse Bettencourt, David Duvenaud \textit{Neural Ordinary Differential Equations}.
 
-\url{https://arxiv.org/pdf/1806.07366.pdf}
-
-\item Zico Kolter, David Duvenaud, and Matt Johnson, \textit{Deep Implicit Layers - Neural ODEs, Deep Equilibirum Models, and Beyond}.
-
-\url{https://implicit-layers-tutorial.org/}
-
-
-
-\item  Ayan Das, \textit{Neural Ordinary Differential Equation (Neural ODE)}.
-
-\url{https://ayandas.me/blog-tut/2020/03/20/neural-ode.html}
-
-\item Hanshu Yan, Jiawei Du, Vincent Tan, Jiashi Feng, \textit{On Robustness of Neural Ordinary Differential Equations}.
-
-\url{https://openreview.net/forum?id=B1e9Y2NYvS}
-
-\item Amer Zayegh, Nizar Al Bassam, \textit{Neural Network Principles and Applications}.
-
-\url{https://www.researchgate.net/publication/329264107_Neural_Network_Principles_and_Applications}
-
-\item Neural ODEs Introduction
-
-\url{https://www.youtube.com/watch?v=uPd0B0WhH5w}
-
-\item  Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani, \textit{An Introduction to Statistical Learning with Applications in R}. Springer.
-
-\item\textit{Stanford CS229: Machine Learning | Autumn 2018}, Lecture 11, 12, 13.
-
-\url{https://www.youtube.com/playlist?list=PLoROMvodv4rMiGQp3WXShtMGgzqpfVfbU}
-
-\item  Christophe Troestler, \guillemotleft Analyse Numérique \guillemotright, UMONS, 2018-2019
-
-
-\end{itemize}
+\nocite{*}
+\bibliography{biblio}
+\bibliographystyle{plain}
 
 
 
