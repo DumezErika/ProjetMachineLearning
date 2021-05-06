@@ -575,8 +575,7 @@ We can compare these results with those we had for the ResNet, we can see that t
 
 \section{Example}
 
-%TODO expliquer + regarder comment il fait l'évolution
-à faire
+Consider a data set in a 2-dimensional space. This data set is composed of a set of points sent to -1 in an inner circle and an other set of points sent to +1 in an annulus. The ODE-Net is used to classify these points. The Figure \ref{evol} shows how the points evolve during the training. The more iterations we do, the more the points of each class separate from each other. At the end of the training, we can see that the points are linearly separable. When we take a look at the Figure \ref{loss}, we can see that after 40 iterations, the error value has a slow decrease. Finally, if we plot the original points and the predictions, we can see on Figure \ref{class} that the model has good results on the test set.
 
 \begin{figure}[!h]
 \center
@@ -587,7 +586,7 @@ We can compare these results with those we had for the ResNet, we can see that t
 
 \begin{figure}[!h]
 \center
-\includegraphics[scale=0.7]{loss_spheres.png}
+\includegraphics[scale=0.65]{loss_spheres.png}
 \caption{Evolution of the loss during training}
 \label{loss}
 \end{figure}
@@ -671,24 +670,32 @@ $$
 \begin{definition}
 Le $f: \mathbb{R}^n \rightarrow \mathbb{R}$ be function, $n\geq 2$. Then $f$ is \textit{convex} if and only if
 $$
-\forall 0\leq t \leq 1, \forall x_1,x_2\in \mathbb{R}^n, \ \ \ f(tx_1 + (1-t)x_2) \leq tf(x_1) + (1-t)f(x_2)
+\forall 0\leq t \leq 1, \forall x_1,x_2\in \mathbb{R}^n, \ \ \ f(tx_1 + (1-t)x_2) \leq tf(x_1) + (1-t)f(x_2).
 $$
 \end{definition}
 
 \begin{definition}
 If $f$ and $g$ are differentiable functions, then the \textit{chain rule} expresses the derivative of their composite $f \circ g$ in terms of the derivatives of $f$ and $g$ and the product of functions as follows:
 $$
-\frac{\partial f \circ g}{\partial x} = \Big(\frac{\partial f}{\partial x} \circ g\Big)\frac{\partial g}{\partial x}
+\frac{\partial f \circ g}{\partial x} = \Big(\frac{\partial f}{\partial x} \circ g\Big)\frac{\partial g}{\partial x}.
+$$
+\end{definition}
+
+\begin{definition}
+A smooth function $f:\mathbb{R}^d \to \mathbb{R}$ is L-Lipschitz if for all $x,y \in \mathbb{R}^d$,
+$$
+\| \nabla f(x) - \nabla f(y) \|_2 \leqslant L \|x-y\|_2.
 $$
 \end{definition}
 
 \begin{theorem} \label{thmconvgd}
-Si $f : \mathbb{R}^d \to \mathbb{R}$ est une fonction L-Lipschitzienne convexe et si $x^* = argmin_x f(x)$, alors l'algorithme de descente du gradient avec la taille de pas $\eta \leqslant \frac{1}{L}$ satisfait
+If $f : \mathbb{R}^d \to \mathbb{R}$ is a function L-Lipschitz convex and if $x^* = argmin_x f(x)$, then the gradient descent algorithm with step-size $\eta \leqslant \frac{1}{L}$ satisfy
 $$
 f(x_{k}) \leqslant f(x^*) + \frac{\|x_0 - x^* \|_2}{2\eta k} .
 $$
 \end{theorem}
 
+\newpage
 \section{References}
 
 \nocite{*}
