@@ -94,7 +94,6 @@ class Trainer():
             if not self.is_resnet:
                 iteration_nfes = self._get_and_reset_nfes()
                 epoch_nfes += iteration_nfes
-
             loss = self.loss_func(y_pred, y_batch)
             loss.backward()
             self.optimizer.step()

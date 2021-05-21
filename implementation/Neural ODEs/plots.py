@@ -4,6 +4,9 @@ import torch
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import Axes3D, proj3d
+import torch.nn as nn
+from sklearn.metrics import log_loss
+
 
 
 categorical_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
@@ -19,28 +22,38 @@ def vector_field_plt(odefunc, num_points, timesteps, inputs=None, targets=None,
                      save_fig=''):
     """For a 1 dimensional odefunc, returns the vector field associated with the
     function.
+
     Parameters
     ----------
     odefunc : ODEfunc instance
         Must be 1 dimensional ODE. I.e. dh/dt = f(h, t) with h being a scalar.
+
     num_points : int
         Number of points in h at which to evaluate f(h, t).
+
     timesteps : int
         Number of timesteps at which to evaluate f(h, t).
+
     inputs : torch.Tensor or None
         Shape (num_points, 1). Input points to ODE.
+
     targets : torch.Tensor or None
         Shape (num_points, 1). Target points for ODE.
+
     model : anode.models.ODEBlock instance or None
         If model is passed as argument along with inputs, it will be used to
         compute the trajectory of each point in inputs and will be overlayed on
         the plot.
+
     h_min : float
         Minimum value of hidden state h.
+
     h_max : float
         Maximum value of hidden state h.
+
     t_max : float
         Maximum time to which we solve ODE.
+
     extra_traj : list of tuples
         Each tuple contains a list of numbers corresponding to the trajectory
         and a string defining the color of the trajectory. These will be dotted.
@@ -99,23 +112,30 @@ def histories_plt(all_history_info, plot_type='loss', shaded_err=False,
     ----------
     all_history_info : list
         results[i]["models"] coming out of experiment
+
     plot_type : string
         One of 'loss', 'nfe' or 'nfe_vs_loss'.
+
     shaded_err : bool
         If True, plots the standard deviation of the history as a shaded area
         around the mean.
+
     labels : list of string
         If len(labels) > 0, will color and annotate plot by desciprition in
         labels.
+
     include_mean : bool
         If False doesn't include mean of histories on the plot. This is useful
         when having incomplete histories (e.g. when a model underflows).
+
     nfe_type : string
         Only used when doing either an 'nfe' or 'nfe_vs_loss' plot.
+
     time_per_epoch : list of floats
         If empty, plots number of epochs on the x-axis. If not empty, scales
         the length of the x-axis by time per epoch for each model. The time per
         epoch should be given in seconds.
+
     save_fig : string
         If string is non empty, save figure to the path specified by save_fig.
     """
@@ -210,13 +230,16 @@ def histories_plt(all_history_info, plot_type='loss', shaded_err=False,
 def single_feature_plt(features, targets, save_fig=''):
     """Plots a feature map with points colored by their target value. Works for
     2 or 3 dimensions.
+
     Parameters
     ----------
     features : torch.Tensor
         Tensor of shape (num_points, 2) or (num_points, 3).
+
     targets : torch.Tensor
         Target points for ODE. Shape (num_points, 1). -1 corresponds to blue
         while +1 corresponds to red.
+
     save_fig : string
         If string is non empty, save figure to the path specified by save_fig.
     """
@@ -254,13 +277,16 @@ def single_feature_plt(features, targets, save_fig=''):
 def multi_feature_plt(features, targets, save_fig=''):
     """Plots multiple feature maps colored by their target value. Works for 2 or
     3 dimensions.
+
     Parameters
     ----------
     features : list of torch.Tensor
         Each list item has shape (num_points, 2) or (num_points, 3).
+
     targets : torch.Tensor
         Target points for ODE. Shape (num_points, 1). -1 corresponds to blue
         while +1 corresponds to red.
+
     save_fig : string
         If string is non empty, save figure to the path specified by save_fig.
     """
@@ -304,20 +330,27 @@ def trajectory_plt(model, inputs, targets, timesteps, highlight_inputs=False,
                    include_arrow=False, save_fig=''):
     """Plots trajectory of input points when evolved through model. Works for 2
     and 3 dimensions.
+
     Parameters
     ----------
     model : anode.models.ODENet instance
+
     inputs : torch.Tensor
         Shape (num_points, num_dims) where num_dims = 1, 2 or 3 depending on
         augment_dim.
+
     targets : torch.Tensor
         Shape (num_points, 1).
+
     timesteps : int
         Number of timesteps to calculate for trajectories.
+
     highlight_inputs : bool
         If True highlights input points by drawing edge around points.
+
     include_arrow : bool
         If True adds an arrow to indicate direction of trajectory.
+
     save_fig : string
         If string is non empty, save figure to the path specified by save_fig.
     """
@@ -418,13 +451,17 @@ def input_space_plt(model, plot_range=(-2., 2.), num_steps=201, save_fig=''):
     """Plots input space, where each grid point is colored by the value
     predicted by the model at that point. This only works for 2 dimensional
     inputs.
+
     Parameters
     ----------
     model : anode.models.ODENet
+
     plot_range : tuple of floats
         Range on which to plot input space.
+
     num_steps : int
         Number of steps at which to evalute model along each dimension.
+
     save_fig : string
         If string is non empty, save figure to the path specified by save_fig.
     """
@@ -476,18 +513,24 @@ class Arrow3D(FancyArrowPatch):
 def ode_grid(odefunc, num_points, timesteps, h_min=-2., h_max=2., t_max=1.):
     """For a 1 dimensional odefunc, returns the points and derivatives at every
     point on a grid. This is useful for plotting vector fields.
+
     Parameters
     ----------
     odefunc : anode.models.ODEfunc instance
         Must be 1 dimensional ODE. I.e. dh/dt = f(h, t) with h being a scalar.
+
     num_points : int
         Number of points in h at which to evaluate f(h, t).
+
     timesteps : int
         Number of timesteps at which to evaluate f(h, t).
+
     h_min : float
         Minimum value of hidden state h.
+
     h_max : float
         Maximum value of hidden state h.
+
     t_max : float
         Maximum time for ODE solution.
     """
@@ -506,16 +549,21 @@ def ode_grid(odefunc, num_points, timesteps, h_min=-2., h_max=2., t_max=1.):
     return t, hidden, dtdt, dhdt
 
 
-def get_feature_history(trainer, dataloader, inputs, targets, num_epochs):
+def get_feature_history(trainer, dataloader, inputs, targets, num_epochs, X_test=None, Y_test=None):
     """Helper function to record feature history while training a model. This is
     useful for visualizing the evolution of features.
+
     trainer : anode.training.Trainer instance
+
     dataloader : torch.utils.DataLoader
+
     inputs : torch.Tensor
         Tensor of shape (num_points, num_dims) containing a batch of data which
         will be used to visualize the evolution of the model.
+
     targets : torch.Tensor
         Shape (num_points, 1). The targets of the data in inputs.
+
     num_epochs : int
         Number of epochs to train for.
     """
@@ -523,6 +571,7 @@ def get_feature_history(trainer, dataloader, inputs, targets, num_epochs):
     # Get features at beginning of training
     features, _ = trainer.model(inputs, return_features=True)
     feature_history.append(features.detach())
+
     for i in range(num_epochs):
         trainer.train(dataloader, 1)
         features, _ = trainer.model(inputs, return_features=True)

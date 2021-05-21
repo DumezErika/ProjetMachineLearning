@@ -42,9 +42,6 @@ def resnet_squared_loss(params, inputs, targets, resnet_depth):
     preds = resnet(params, inputs, resnet_depth)
     return jnp.mean(jnp.sum((preds - targets)**2, axis=1))
 
-def init_random_params(scale, layer_sizes, rng=npr.RandomState(0)):
-    return [(scale * rng.randn(m,n), scale * rng.randn(n)) for m, n, in zip(layer_sizes[:-1], layer_sizes[1:])]
-
 def resnet_update(params, inputs, targets, step_size, resnet_depth):
     grads = grad(resnet_squared_loss)(params, inputs, targets, resnet_depth)
     return [(w - step_size * dw, b - step_size * db) for (w, b), (dw, db) in zip(params, grads)]
@@ -80,12 +77,15 @@ if __name__ == "__main__":
   batched_odenet = vmap(odenet, in_axes=(None, 0))
   npr.seed(1)
 
-  inputs = jnp.reshape(jnp.linspace(-2.5, 2.5, 10), (10, 1))
+  inputs = jnp.reshape(jnp.linspace(-5.0, 5.0, 50), (50, 1))
   targets = inputs**3 + 0.1 * inputs
-  noise =  npr.randn(10)
-  noise = jnp.reshape(noise, (10, 1))
+  noise =  npr.randn(50)*5
+  noise = jnp.reshape(noise, (50, 1))
   noisy_targets = targets + noise
-  fine_inputs = jnp.reshape(jnp.linspace(-3.0, 3.0, 100), (100, 1))
+  fine_inputs = jnp.reshape(jnp.linspace(-5.0, 5.0, 100), (100, 1))
+  noise =  npr.randn(100)*5
+  noise = jnp.reshape(noise, (100, 1))
+  fine_outputs = (fine_inputs**3 + 0.1 * fine_inputs) + noise
 
   # On doit changer la dimension de l'input à 2 pour permettre des dynamique qui dépendent du temps
   odenet_layer_sizes = [2, 20, 1]
@@ -99,20 +99,30 @@ if __name__ == "__main__":
 
   # Initialise les poids et biais des couches et entraine le modèle
   resnet_params = init_random_params(param_scale, layer_sizes)
+  loss_resnet = []
   for i in range(train_iters):
+    if i % 10 == 0:
+      print(i)
     resnet_params = resnet_update(resnet_params, inputs, noisy_targets, step_size, resnet_depth)
-    show_evol(i, inputs, noisy_targets, fine_inputs, resnet(resnet_params, fine_inputs, resnet_depth), "ResNet", 20)
+    loss_resnet.append(resnet_squared_loss(resnet_params, fine_inputs, fine_outputs, resnet_depth))
+    # show_evol(i, inputs, noisy_targets, fine_inputs, resnet(resnet_params, fine_inputs, resnet_depth), "ResNet", 20)
 
   param_scale = 0.1
-  step_size = 0.005
-  train_iters = 5000
+  step_size = 0.01
+  train_iters = 500
 
   odenet_params = init_random_params(param_scale, odenet_layer_sizes)
-
+  loss_odenet = []
   for i in range(train_iters):
+    print(i)
     odenet_params = odenet_update(odenet_params, inputs, noisy_targets, step_size)
+    loss_odenet.append(odenet_loss(odenet_params, fine_inputs, fine_outputs))
     # show_evol(i, inputs, noisy_targets, fine_inputs, batched_odenet(odenet_params, fine_inputs), "ODE-Net", 100)
 
+  plt.plot(loss_resnet)
+  plt.show()
+  plt.plot(loss_odenet)
+  plt.show()
   fine_outputs_odenet = batched_odenet(odenet_params, fine_inputs)
   fine_outputs_resnet = resnet(resnet_params, fine_inputs, resnet_depth)
   graphe("ResNet", fine_inputs, fine_outputs_resnet, inputs, noisy_targets)

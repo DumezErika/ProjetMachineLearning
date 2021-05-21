@@ -38,7 +38,7 @@ def colors(data):
 
 if __name__ == "__main__":
     X, y = ToyDataset().generate(n_samples=512, noise=1e-2, dataset_type='spheres', dim=2)  
-    # show_data(X, y)
+    show_data(X, y)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     train = data.TensorDataset(X.to(device), y.long().to(device))
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(max_epochs=1000, progress_bar_refresh_rate=1)
     trainer.fit(nde, trainloader)
 
-    #show_evolution(X,y)
+    show_evolution(X,y)
 
     X_test = torch.rand(1000,2, dtype=torch.float)
     data_test = X_test.detach().numpy().tolist()
