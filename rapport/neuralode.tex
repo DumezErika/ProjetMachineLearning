@@ -313,16 +313,16 @@ h(x) + \varepsilon,
 $$
 where $\varepsilon$ is a noise variable with mean $0$ and standard deviation $1$.
 
-We train a ResNet with $3$ layers, the hidden one having $20$ neurons. After $1000$ iteration, we get the function given in Figure \ref{example_resnet}.
+We train a ResNet with $3$ layers, the hidden one having $20$ neurons. Each layer has the hyperbolic tangent as activation function. The learning rate used during the training was $0.01$. After $1000$ iterations, we get the function given in Figure \ref{example_resnet}.
 
 \begin{figure}[!h]
 \center
-\includegraphics[scale=0.4]{ex_resnet.png}
+\includegraphics[scale=0.5]{ex_resnet.png}
 \caption{Result of the training for the ResNet}
 \label{example_resnet}
 \end{figure}
 
-The green points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ResNet. The out-of-sample error for the points used to trace the line is $4.6735477$.
+The purple points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ResNet. We tested the function returned by the ResNet on the points we used to trace the blue line. The out-of-sample error for these points is $4.673$. The loss function was the mean squared error.
 
 
 \subsection{Implicit Layers}
@@ -548,13 +548,13 @@ We can represent this process with the Figure \ref{process}. As we can see, duri
 
 \subsection{Simple Example}
 
-Let's reuse the example for ResNets. We have the function 
+We can now use the same example than for ResNets. We have the function 
 $$
 h(x) = x^3 + 0.1x
 $$
-that we wish to approximate.We use the same training data as for the ResNet.
+that we wish to approximate. We use the same training data as for the ResNet.
 
-The dynamics of the ODE-Net is specified by a layer of size $20$. After $1000$ iteration, we get the function given in Figure \ref{example_odenet}.
+The dynamics of the ODE-Net is specified by a layer of size $20$. The learning rate in this case was also $0.005$. Each layer has the hyperbolic tangent as activation function. After $1500$ iteration, we get the function given in Figure \ref{example_odenet}.
 
 \begin{figure}[!h]
 \center
@@ -563,7 +563,7 @@ The dynamics of the ODE-Net is specified by a layer of size $20$. After $1000$ i
 \label{example_odenet}
 \end{figure}
 
-The green points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ODE-Net.
+The purple points represent the data used for the training, the blue line is the function we want to approximate and the red line is the function represented by the ODE-Net. With the mean squared error, we had an out-of-sample error of $5.342$.
 
 We can compare these results with those we had for the ResNet, we can see that the ResNets is slightly better with these parameters. The comparison graph is in the Figure \ref{comparaison}.
 \begin{figure}[!h]
@@ -573,6 +573,7 @@ We can compare these results with those we had for the ResNet, we can see that t
 \label{comparaison}
 \end{figure}
 
+\newpage
 \section{Example}
 
 Consider a data set in a 2-dimensional space. This data set is composed of a set of points sent to -1 in an inner circle and an other set of points sent to +1 in an annulus. The ODE-Net is used to classify these points. The Figure \ref{evol} shows how the points evolve during the training. The more iterations we do, the more the points of each class separate from each other. At the end of the training, we can see that the points are linearly separable. When we take a look at the Figure \ref{loss}, we can see that after 40 iterations, the error value has a slow decrease. Finally, if we plot the original points and the predictions, we can see on Figure \ref{class} that the model has good results on the test set.
