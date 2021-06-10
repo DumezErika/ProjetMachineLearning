@@ -32,9 +32,14 @@
 \newpage
 \section{Introduction}
 
-In this document, we introduce ODE-nets, which are deep neural networks models using ordinary differential equations. We focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, implicit layers, ... 
+In this document, we introduce ODE-nets, which are deep neural networks models using ordinary differential equations. 
+ODE-Nets are a fairly recent field of study. It uses ODEs which are, on the contrary, very old and have been studied for a long time, and thus are well-known. 
 
-\noindent At the end, we'll conclude with the advantages and disadvantages of ODE-nets.
+This model is very promising since it has advantages over simple neural networks, such as a constant memory cost as well as better results on continuous time series data.
+
+Here, we will focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, implicit layers, ... 
+
+At the end, we'll conclude with the advantages and disadvantages of ODE-nets.
 The code use to make the examples can be found at \url{https://github.com/DumezErika/ProjetMachineLearning}.
 
 
@@ -574,34 +579,58 @@ We can compare these results with those we had for the ResNet, we can see that t
 \end{figure}
 
 \newpage
-\section{Example}
+\section{Example with real data}
 
-Consider a data set in a 2-dimensional space. This data set is composed of a set of points sent to -1 in an inner circle and an other set of points sent to +1 in an annulus. The ODE-Net is used to classify these points. The Figure \ref{evol} shows how the points evolve during the training. The more iterations we do, the more the points of each class separate from each other. At the end of the training, we can see that the points are linearly separable. When we take a look at the Figure \ref{loss}, we can see that after 40 iterations, the error value has a slow decrease. Finally, if we plot the original points and the predictions, we can see on Figure \ref{class} that the model has good results on the test set.
+Now that we have tested the ODE-Net architecture on different small examples, we can test it on real data to see how it performs. 
+
+The data we chose is the MIT Beth Israel Hospital (BIH) electrocardiogram dataset that can be found at \url{https://www.kaggle.com/shayanfazeli/heartbeat}. It contains two data sets: one for training and one for testing.
+
+This dataset consists of around 110,000 samples, classified as either 
+\begin{itemize}
+\item 0: normal;
+\item 1: supraventricular premature beat;
+\item 2: premature ventricular contraction;
+\item 3: fusion of ventricular and normal beat;
+\item 4: unclassified beat.
+\end{itemize}
+
+We will build a ResNet and an ODE-Net as similar as possible so that we can compare them better.
+\begin{itemize}
+\item The Resnet is composed of 3 first linear layers with ReLU as activation function, followed by 6 residual block also with ReLU. The output layer is a simple linear layer (with the input flattened).
+
+\item The ODE-Net is composed similarly of 3 first layers, each followed by the activation function ReLU. The dynamics are defined by ODEfunc, which is a linear layer taking time into account. The output layer is the same as for the ResNet, i.e. a simple linear layer with the input flattened.
+\end{itemize}
+
+
+To optimize our model we use the cross entropy error. The parameters are then updated using stochastic gradient descent with a learning rate of $0.1$ and a momentum of $0.9$.
+We trained each models for 20 epochs with batches of size $128$.
 
 \begin{figure}[!h]
 \center
-\includegraphics[scale=0.6]{evol_spheres.png}
-\caption{Evolution of the points during training}
-\label{evol}
+\includegraphics[scale=0.5]{resnet_rd_loss.png}
+\caption{Evolution of the error during training of the ResNet}
+\label{resnet_rd}
 \end{figure}
 
 \begin{figure}[!h]
 \center
-\includegraphics[scale=0.65]{loss_spheres.png}
-\caption{Evolution of the loss during training}
-\label{loss}
+\includegraphics[scale=0.5]{odenet_rd_loss.png}
+\caption{Evolution of the error during training of the ODE-Net}
+\label{odenet_rd}
 \end{figure}
 
-\begin{figure}[!h]
-\center
-\includegraphics[scale=0.6]{class_spheres.png}
-\caption{Result of the training}
-\label{class}
-\end{figure}
+~
 
-\newpage
+In Figure \ref{resnet_rd}, we can see the evolution of the training and test loss. We tested our models on test data and used the cross entropy error to evaluate it. At the end of the training, the Resnet had a test error of $0.1$.
 
-\subsection{Advantages and disadvantages of ODE-Nets}
+For the ODE-Net, we can see the evolution of the loss on Figure \ref{odenet_rd}. At the end of the training, the model had a test error of $0.09$. Thus the ODE-Net is slightly better than the ResNet. Moreover, the figures show that the ODE-Net learns faster since the curve decreases in less epochs.
+
+~
+
+We also computed the accuracy of each models. To do so we first used softmax to compute predictions for the test data, then we used the zero-one loss on those predictions. Both the ResNet and the ODE-Net have an accuracy of $97,5\%$, which is a good accuracy.
+
+
+\section{Advantages and disadvantages of ODE-Nets}
 
 \subsubsection*{Advantages}
 \begin{itemize}
@@ -640,6 +669,8 @@ In ODE-Nets we need to choose a solver and its error tolerance, which induces mo
 
 To ensure that the ODE has a solution we have to make sure the dynamics are uniformly continuous Lipschitz (q.v. Theorem \ref{exiunique}). This is why we mostly use $tanh$ as an activation function.
 \end{itemize}
+
+\newpage
 
 \section{Appendix}\label{annex}
 
@@ -697,7 +728,6 @@ $$
 \end{theorem}
 
 \newpage
-\section{References}
 
 \nocite{*}
 \bibliography{biblio}
