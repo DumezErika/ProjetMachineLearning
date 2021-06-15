@@ -22,7 +22,7 @@
 \newtheorem{notation}{Notation}
 
 \author{Della Bona Sarah, Dumez Erika}
-\title{Introduction to Neural ODE}
+\title{Introduction to Neural Ordinary Differential Equation}
 \begin{document}
 \maketitle
 
@@ -32,157 +32,54 @@
 \newpage
 \section{Introduction}
 
-In this document, we introduce ODE-nets, which are deep neural networks models using ordinary differential equations. 
+In this document, we introduce ODE-Nets, which are deep neural networks models using ordinary differential equations. 
 ODE-Nets are a fairly recent field of study. It uses ODEs which are, on the contrary, very old and have been studied for a long time, and thus are well-known. 
 
 This model is very promising since it has advantages over simple neural networks, such as a constant memory cost as well as better results on continuous time series data.
 
-Here, we will focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, implicit layers, ... 
+Here, we will focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, \dots
 
 At the end, we'll conclude with the advantages and disadvantages of ODE-nets.
-The code use to make the examples can be found at \url{https://github.com/DumezErika/ProjetMachineLearning}.
+The code used to make the examples can be found at \url{https://github.com/DumezErika/ProjetMachineLearning}.
 
+We can begin by the basis and describe what is a machine learning problem.
 
-\section{Ordinary Differential Equations}
+\section{Machine Learning}
+In a typical machine learning problem \cite{10}, we have an output variable $Y$ to $p$ predictors $X_1,\dots, X_p$, also called input variables, where $p\in \mathbb{N}\backslash \{0\}$. The inputs belongs to an input space $\mathcal{X}$ and usually $\mathcal{X} \subset \mathbb{R}^p$. The output belongs to a output space $\mathcal{Y}$. If this is a regression problem, $\mathcal{Y} \subset \mathbb{R}$. But if we have a classification problem with $K$ categories, $\mathcal{Y} = \{1,2,\dots, K\}$.
 
-An\textit{ ordinary differential equation} (ODE) \cite{9} is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
-
-\begin{definition}
-Let $\Omega \subseteq \mathbb{R} \times \mathbb{R}^N$ an open set. Let $f: \Omega \rightarrow \mathbb{R}^N$. 
-
-A \textit{first order ODE} takes the form
+Let us assume that there is some relationship between $Y$ and $X = (X_1,\dots, X_p)$, which can be written in the general form
 $$
-\frac{\partial u}{\partial t}(t) = f(t,u(t))
+Y = f(X) + \epsilon
 $$
+where $f$ is some fixed but unknown function, called \textit{target function}, of $X_1, \dots, X_p$ and $\epsilon$ is a random error term which is independent of $X$ and has mean zero and finite variance.
 
-\begin{itemize}
-\item A \textit{solution} for this ODE is a function $u : I\in \mathbb{R} \rightarrow \mathbb{R}^N$, where $I$ is an interval, such that
-	\begin{itemize}
-	\item[•] u is differentiable on $I$,
-	\item[•] $\forall t \in I, (t, u(t)) \in \Omega$,
-	\item[•] $\forall t \in I, \frac{\partial u}{\partial t}(t) = f(t, u(t))$
-	\end{itemize}
-~
-
-\item An \textit{initial condition} (IC) is a condition of the type
-$$
-u(t_0) = u_0
-$$
-where $(t_0, u_0) \in \Omega$ is fixed.
-
-~
-
-\item A \textit{Cauchy problem} is an ODE with IC
-$$
-\left \{
-\begin{array}{rcl}
-\frac{\partial u}{\partial t}(t) & = & f(t, u(t)) \\
-u(t_0) & = & u_0
-\end{array}
-\right.
-$$
-\end{itemize}
-\end{definition}
-
-%\begin{definition}
-%A \textit{k-order ODE}, with $k \in \mathbb{N}\backslash \{0\}$, takes the form
-%$$
-%\partial^k_t v(t) = g(t, v(t), ... , \partial^{k-1}v(t))
-%$$
-%where 
-%
-%\begin{align*}
-%v &:  I \rightarrow \mathbb{R}^N, I\subset \mathbb{R} \\ 
-%g &:  \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
-%\end{align*} 
-%\end{definition}
-
-\subsection{A simple example}
-Let $\frac{\partial x}{\partial t}(t) = x(t)$ an ODE. The solutions of this ODE are
-$$
-\{ x(t) = ae^t\ |\ a\in \mathbb{R}\}.
-$$
-
-Indeed, for all $a \in \mathbb{R}$ we have
-$$
-\frac{\partial ae^t}{\partial t} = ae^t
-$$
-If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solution is $e^t$, since $e^0 = 1$ and $\partial_te^t = e^t$.
-
-\subsection{Existence and uniqueness of a solution} \label{exiunique}
-
-If we want to find the solution to an ODE, we need to know the conditions under which this ODE has a solution. Thus, we define \textit{Lipschitz continuous functions}. This notion is crucial for the following theorem which gives conditions for the existence and uniqueness of a solution to an ODE.
-
-\begin{definition}
-Let $(X, d_X)$ and $(Y, d_Y)$ be two metric spaces.  
-A function 
-
-\noindent $f: X \rightarrow  Y$ is called \textit{Lipschitz continuous} if
-$$
-\exists K \geq 0, \  \forall x_1, x_2 \in X, \  d_Y(f(x_1), f(x_2)) \leq Kd_X(x_1, x_2).
-$$
-\end{definition}
-
-\begin{theorem}{\textbf{Picard-Lindelöf theorem}}
-
-Consider the Cauchy problem
-$$
-\frac{\partial u}{\partial t} (t) = f(t, u(t)), \ \ \ u(t_0) = u_0.
-$$
-Suppose $f$ is uniformly Lipschitz continuous in $u$ and continuous in $t$. Then for some value $T > 0$, there exists a unique solution $u(t)$ to the Cauchy problem on the interval $[t_0, t_0 + T]$. 
-\end{theorem}
-
-\subsection{One-step methods}
-Unfortunately, it is not always possible to explicitly find a solution to a Cauchy problem. However, let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We can compute a finite number of points $(u_1, \dots, u_n)$ such that:
-$$
-\forall i\in \{0,\dots, n\},  u_i \approx u(t_i).
-$$
-
-To compute those points, we use \textit{one-step methods} which compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
-
-\subsection{Euler's method} \label{euler}
-Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development (q.v. Section \ref{annex}), the idea is to compute $u(t_{i+1})$ using the formula
-\begin{equation}\label{eqeuler}
-u(t_{i+1}) \approx u(t_i) + h\frac{\partial u}{\partial t}(t_i)
-\end{equation}
-where 
-$$
-\frac{\partial u}{\partial t}(t_i) = f(t_i, u(t_i)).
-$$
-
-
-\section{Neural Networks}
-In a typical machine learning problem \cite{10}, we have an output variable $Y$ to $p$ predictors $X_1,\dots, X_p$, also called input variable, where $p\in \mathbb{N}\backslash \{0\}$. The inputs belongs to an input space $\mathcal{X}$ and usually $\mathcal{X} \subset \mathbb{R}^p$. The output belongs to a output space $\mathcal{Y}$. It depends on the problem, for example: if this is a regression problem, $\mathcal{Y} \subset \mathbb{R}$. But if we have a classification problem with $K$ categories, $\mathcal{Y} = \{1,2,\dots, K\}$.
-
-Let's assume that there is some relationship between $Y$ and $X = (X_1,\dots, X_p)$, which can be written in the general form
-$$
-Y = f(X) + \epsilon.
-$$
-Here $f$ is some fixed but unknown function, called \textit{target function}, of $X_1, \dots, X_p$ and $\epsilon$ is a random error term which is independent of $X$ and has mean zero and finite variance.
-
-The goal of machine learning is to estimate this function $f$ as precisely as possible. To do that, we need a \textit{data set} to learn. The data is a set of $n$ points in $\mathcal{X} \times \mathcal{Y}$
+There is multiple types of machine learning problem. One of them is \textit{supervised learning} and it is the one we will consider in this document. The goal of supervised learning is to estimate the function $f$ as precisely as possible thanks to a model that we will train. To do that, we need a \textit{data set} in order for the model to learn. The data is a set of $n$ points in $\mathcal{X} \times \mathcal{Y}$ 
 $$
 \mathcal{D} = \{(x_1, y_1),\dots, (x_n,y_n)\}.
 $$
+a sample of the variables.
 
-Let $x$ be a data point, then we can predict its output $y$ using 
+Let $x$ be a point in the input space $\mathcal{X}$, then we can predict its output $y$ using 
 $$
 \hat{y} = \hat{f}(x),
 $$
 where $\hat{f}$ represents our estimate for $f$, and $\hat{y}$ represents the resulting prediction for $y$.
 
-To determine the precision of an estimation $\hat{f}$, we use a \textit{loss function}, which is a function of a prediction and the output given by the target function. Some example of loss functions are
+To measure the accuracy of a prediction given by $\hat{f}$, we use a \textit{loss function} $\mathcal{L}$ from  $\mathbb{R}^2$ to $\mathbb{R}$, which is a function of a prediction and the output given by the target function. Some example of loss functions are
 \begin{itemize}
 \item Square error loss: $\mathcal{L}(y, \hat{y}) = (y-\hat{y})^2$;
 \item Absolute error loss: $\mathcal{L}(y, \hat{y}) = |y - \hat{y}|$;
 \item Zero-one loss: $\mathcal{L}(y, \hat{y}) = \mathds{1}_{\{(y, \hat{y}) | y\neq \hat{y}\}}(y, \hat{y})$.
 \end{itemize}
 
+To train the model we use a data set called the \textit{train set}. The model is constructed with different parameters $\theta$. During the training we search for the parameters that will minimize a chosen error measure (loss function). Once the model is trained, we can test it on an other data set, called the \textit{test set}, using an error measure which can be a loss function. The error on the test set is called \textit{out-of-sample error} whereas the error on the training set is called the \textit{in-sample error}.
 
-\subsection{Definition}
+We will focus on one type of model in particular which are neural networks.
+
+\subsection{Neural Networks}
 
 
-\noindent A \textit{neural network} \cite{8} can be used to solve a machine learning problem. It consists of a series of layers. There are three types of layers :
+\noindent A \textit{neural network} \cite{8} is used to solve a machine learning problem. It consists of a series of layers. There are three types of layers :
 
 \begin{itemize}
 \item The \textit{input} layer
@@ -190,17 +87,26 @@ To determine the precision of an estimation $\hat{f}$, we use a \textit{loss fun
 \item The \textit{hidden} layers
 \end{itemize}
 
-Each layer consist of a certain number of neurons. We give an input $x$ to the neurons of a layer, they do some calculus and give an output $z$. An \textit{activation function} is then applied to this output and obtain a value $h$ before transmitting it to the next layer thanks to the connections between the neurons of each layer. The simplest example of a neural network layer is 
-
-$$
-h = \sigma (wx +b)
-$$
-where $\sigma$ is an activation function, $w$ is a weight matrix and $b$ a bias vector.
+Each layer consist of a certain number of neurons. We give an input $x$ to the neurons of a layer and they give an output $z$. An \textit{activation function} is then applied to this output and obtain a value $h$ before transmitting it to the next layer thanks to the connections between the neurons of each layer. The most used activation functions are :
+\begin{itemize}
+\item Sigmoid : $sigmoid(z) = \frac{1}{1 + e^{-z}}$;
+\item Hyperbolic tangent : $\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$;
+\item ReLU : $ReLU(z) = \max(0,z)$.
+\end{itemize}
+We use an activation function to add non-linearity to the network.
 
 ~
 
-%TODO mettre les formules directement dans la définition
-We begin by giving an input to the input layer, which transmits information to the first hidden layer\footnote{There isn't always an hidden layer in a neural network}. In turn, it transmit information to the next layer and so on, until the output layer gives us the final output, the \textit{prediction}. An example of neural network is given in figure \ref{examplenn}.
+The simplest example of a neural network layer is 
+
+$$
+h = \sigma (Wx +b)
+$$
+where $\sigma$ is an activation function, $W$ is a weight matrix and $b$ a bias vector.
+
+~
+
+We begin by giving an input to the input layer, which transmits information to the first hidden layer\footnote{There isn't always an hidden layer in a neural network}. In turn, it transmit information to the next layer and so on, until the output layer gives us the final output, the \textit{prediction}. It is called the \textit{forward pass}, which is the process of getting a prediction from an input. An example of neural network is given in figure \ref{examplenn}. 
 
 \begin{figure}
 \center
@@ -209,8 +115,7 @@ We begin by giving an input to the input layer, which transmits information to t
 \label{examplenn}
 \end{figure}
 
-The goal is to minimize the error for every input. To do that, we need to find the optimal parameters for the network which minimize the loss function.
-
+The goal is to minimize the training error for every input of the training set. To do that, we need to find the optimal parameters for the network which minimize the loss function. We need to compute the derivatives of the loss with respect to the parameters. The process used to get these derivatives is the \textit{backward pass}.
 
 
 \subsection{Back propagation}
@@ -359,6 +264,115 @@ An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow
 %\end{theorem}
 %
 %We could use the theorem to compute the derivatives for the backpropagation, but in the following we will use a simpler derivation based on ResNet with the adjoint method.
+
+\section{Ordinary Differential Equations}
+
+An\textit{ ordinary differential equation} (ODE) \cite{9} is an equation that describes the changes of a function through time. The aim is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
+
+\begin{definition}
+Let $\Omega \subseteq \mathbb{R} \times \mathbb{R}^N$ an open set. Let $f: \Omega \rightarrow \mathbb{R}^N$. 
+
+A \textit{first order ODE} takes the form
+$$
+\frac{\partial u}{\partial t}(t) = f(t,u(t))
+$$
+
+\begin{itemize}
+\item A \textit{solution} for this ODE is a function $u : I\in \mathbb{R} \rightarrow \mathbb{R}^N$, where $I$ is an interval, such that
+	\begin{itemize}
+	\item[•] u is differentiable on $I$,
+	\item[•] $\forall t \in I, (t, u(t)) \in \Omega$,
+	\item[•] $\forall t \in I, \frac{\partial u}{\partial t}(t) = f(t, u(t))$
+	\end{itemize}
+~
+
+\item An \textit{initial condition} (IC) is a condition of the type
+$$
+u(t_0) = u_0
+$$
+where $(t_0, u_0) \in \Omega$ is fixed.
+
+~
+
+\item A \textit{Cauchy problem} is an ODE with IC
+$$
+\left \{
+\begin{array}{rcl}
+\frac{\partial u}{\partial t}(t) & = & f(t, u(t)) \\
+u(t_0) & = & u_0
+\end{array}
+\right.
+$$
+\end{itemize}
+\end{definition}
+
+%\begin{definition}
+%A \textit{k-order ODE}, with $k \in \mathbb{N}\backslash \{0\}$, takes the form
+%$$
+%\partial^k_t v(t) = g(t, v(t), ... , \partial^{k-1}v(t))
+%$$
+%where 
+%
+%\begin{align*}
+%v &:  I \rightarrow \mathbb{R}^N, I\subset \mathbb{R} \\ 
+%g &:  \Theta \subseteq \mathbb{R} \times \mathbb{R}^N \times ... \times \mathbb{R}^N \rightarrow \mathbb{R}^N
+%\end{align*} 
+%\end{definition}
+
+\subsection{A simple example}
+Let $\frac{\partial x}{\partial t}(t) = x(t)$ an ODE. The solutions of this ODE are
+$$
+\{ x(t) = ae^t\ |\ a\in \mathbb{R}\}.
+$$
+
+Indeed, for all $a \in \mathbb{R}$ we have
+$$
+\frac{\partial ae^t}{\partial t} = ae^t
+$$
+If we add an initial condition $x(0) = 1$, we have a Cauchy problem and its solution is $e^t$, since $e^0 = 1$ and $\partial_te^t = e^t$.
+
+\subsection{Existence and uniqueness of a solution} \label{exiunique}
+
+If we want to find the solution to an ODE, we need to know the conditions under which this ODE has a solution. Thus, we define \textit{Lipschitz continuous functions}. This notion is crucial for the following theorem which gives conditions for the existence and uniqueness of a solution to an ODE.
+
+\begin{definition}
+Let $(X, d_X)$ and $(Y, d_Y)$ be two metric spaces.  
+A function 
+
+\noindent $f: X \rightarrow  Y$ is called \textit{Lipschitz continuous} if
+$$
+\exists K \geq 0, \  \forall x_1, x_2 \in X, \  d_Y(f(x_1), f(x_2)) \leq Kd_X(x_1, x_2).
+$$
+\end{definition}
+
+\begin{theorem}{\textbf{Picard-Lindelöf theorem}}
+
+Consider the Cauchy problem
+$$
+\frac{\partial u}{\partial t} (t) = f(t, u(t)), \ \ \ u(t_0) = u_0.
+$$
+Suppose $f$ is uniformly Lipschitz continuous in $u$ and continuous in $t$. Then for some value $T > 0$, there exists a unique solution $u(t)$ to the Cauchy problem on the interval $[t_0, t_0 + T]$. 
+\end{theorem}
+
+\subsection{One-step methods}
+Unfortunately, it is not always possible to explicitly find a solution to a Cauchy problem. However, let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We can compute a finite number of points $(u_1, \dots, u_n)$ such that:
+$$
+\forall i\in \{0,\dots, n\},  u_i \approx u(t_i).
+$$
+
+To compute those points, we use \textit{one-step methods} which compute the points $u_{i+1}$ from the previous point $u_i$, the time $t_i$ and the \textit{step} $h_i := t_{i+1} - t_i$.
+
+\subsection{Euler's method} \label{euler}
+Euler's method is a one-step method with a constant step $h$. It is similar to a Taylor development (q.v. Section \ref{annex}), the idea is to compute $u(t_{i+1})$ using the formula
+\begin{equation}\label{eqeuler}
+u(t_{i+1}) \approx u(t_i) + h\frac{\partial u}{\partial t}(t_i)
+\end{equation}
+where 
+$$
+\frac{\partial u}{\partial t}(t_i) = f(t_i, u(t_i)).
+$$
+
+
 
 \section{Neural ODE} \label{neuralode}
 
