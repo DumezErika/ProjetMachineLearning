@@ -527,7 +527,7 @@ where $\varepsilon$ is a noise variable with mean $0$ and standard deviation $1$
 
 ~
 
-We train a ResNet with $3$ layers, the hidden one having $20$ neurons. Each layer has the hyperbolic tangent as activation function. The step-size used during the training was $0.01$. After $1000$ iterations, we get the function given in Figure \ref{example_resnet}.
+We train a ResNet with $3$ layers, the hidden one having $20$ neurons. Each layer has the hyperbolic tangent as activation function. The step-size used during the training was $0.01$. After $1000$ iterations, we get the function given in Figure \ref{example_resnet}. The training is fairly fast and lasts less than $5$ minutes.
 
 \begin{figure}[!h]
 \center
@@ -542,7 +542,7 @@ The purple points represent the data used for the training, the blue line is the
 
 Now we will do the same for an ODE-Net. We use the same training data as for the ResNet.
 
-The dynamics of the ODE-Net is specified by a layer of size $20$. The step-size in this case was $0.005$. Each layer has the hyperbolic tangent as activation function. After $1500$ iterations, we get the function given in Figure \ref{example_odenet}.
+The dynamics of the ODE-Net is specified by a layer of size $20$. The step-size in this case was $0.005$. Each layer has the hyperbolic tangent as activation function. After $1500$ iterations, we get the function given in Figure \ref{example_odenet}. The training is slightly slower than the training of the ResNet, but is still relatively fast and lasts less than $5$ minutes too. 
 
 \begin{figure}[!h]
 \center
@@ -563,21 +563,64 @@ We can compare the results of both models and we can see that the ResNets is sli
 \label{comparaison}
 \end{figure}
 
-\newpage
+
+We can also train the models on different training data sets, generated randomly, to see how it effects the resulting approximation. To do that, we generated $5$ different training data sets of 20 points in the interval $[-3,3]$ and we trained the models on those sets with the same parameters as before.
+
+We can see the results of this in Figures \ref{res_r} and \ref{ode_r}. The resulting approximations are close to the target function and there is little variation between each trained model.
+
+\begin{figure}[!h]
+\center
+\includegraphics[scale=0.6]{resnet_random.png}
+\caption{Approximations resulting from training a ResNet on different training datasets. The blue line is the target function and the red lines are ResNets.}
+\label{res_r}
+\end{figure}
+
+\begin{figure}[!h]
+\center
+\includegraphics[scale=0.6]{odenet_random.png}
+\caption{Approximations resulting from training an ODE-Net on different training datasets. The blue line is the target function and the green lines are ODE-Nets.}
+\label{ode_r}
+\end{figure}
+
+To make sure we are using the parameters that gives the "best" results, we can train models using different values of the step-size to see which one gives the best results. 
+\begin{itemize}
+\item For the ResNet, we trained it on the following step-sizes: $0.001$, $0.01$ and $0.1$. The results are in Figure \ref{res_ss};
+\item For the ODE-Net, we trained it on the following step-sizes: $0.0005$, $0.001$ and $0.005$. Here we used smaller step-sizes because with a step-size equal or bigger than $0.01$ an overflow occurs during training. The results are in Figure \ref{ode_ss}.
+\end{itemize}
+
+\begin{figure}
+\center
+\includegraphics[scale=0.4]{resnet_ss.png}
+\caption{Comparison of ResNets trained with different step-sizes.}
+\label{res_ss}
+\end{figure}
+
+\begin{figure}
+\center
+\includegraphics[scale=0.4]{odenet_ss.png}
+\caption{Comparison of ODE-Nets trained with different step-sizes.}
+\label{ode_ss}
+\end{figure}
+
+We can see that for the ResNet, a step-size too small ($0.001$ and under) gives good results but needs more iterations to stabilise. But when we get to bigger step-sizes, $0.1$ and over, the results start to become less accurate and the errors during training are very unstable.
+
+The same observations can be made about the ODE-Net, with the exception that the errors become unstable with smaller step-sizes. Thus we need even more iterations for the ODE-Net to converge since we use a smaller step-size.
+
 \section{Example with real data}
 
 Now that we have tested the ODE-Net architecture on different small examples, we can test it on real data to see how it performs. 
 
 The data we chose is the MIT Beth Israel Hospital (BIH) electrocardiogram dataset that can be found at \url{https://www.kaggle.com/shayanfazeli/heartbeat}. It contains two data sets: one for training and one for testing.
 
-This dataset consists of around 110,000 samples, classified as either 
+The training dataset consists of around $90,000$ samples, classified as either 
 \begin{itemize}
 \item 0: normal;
 \item 1: supraventricular premature beat;
 \item 2: premature ventricular contraction;
 \item 3: fusion of ventricular and normal beat;
-\item 4: unclassified beat.
+\item 4: unclassified beat;
 \end{itemize}
+and the test dataset is composed similarly, with around $20,000$ samples.
 
 We will build a ResNet and an ODE-Net as similar as possible so that we can compare them better.
 \begin{itemize}
@@ -588,7 +631,7 @@ We will build a ResNet and an ODE-Net as similar as possible so that we can comp
 
 
 To optimize our model we use the cross entropy error. The parameters are then updated using stochastic gradient descent with a learning rate of $0.1$ and a momentum of $0.9$.\footnote{Stochastic Gradient Descent with momentum is a method that accelerate the computation of the gradient and thus leads to faster converging.\cite{8}}
-We trained each models for 20 epochs with batches of size $128$.
+We trained each models on the training set for $25$ epochs with batches of size $128$. The training for the ODE-Net was again slower than for the ResNets. While the ResNet lasted less than $10$ minutes, the ODE-Net lasted around $30$ minutes.
 
 \begin{figure}[!h]
 \center
@@ -612,8 +655,35 @@ For the ODE-Net, we can see the evolution of the loss on Figure \ref{odenet_rd}.
 
 ~
 
-We also computed the accuracy of each models. To do so we first used softmax to compute predictions for the test data, then we used the zero-one loss on those predictions. Both the ResNet and the ODE-Net have an accuracy of $97,5\%$, which is a good accuracy.
+We also computed the accuracy of each models. To do so we first used softmax to compute predictions for the test data, then we used the zero-one loss on those predictions. The ResNet has an accuracy of $97.5\%$ while the ODE-Net has a slightly better accuracy of $97.8\%$.
 
+Another way of judging the quality of a model in the case of classification is to look at its \textit{confusion matrix}. The confusion matrix is a matrix that has the same number of columns and lines as the number of classes. In position $(i,j)$ in the matrix is the number of point that are in the $i^{th}$ class and were classified in the $j^{th}$ class by the model. A good models needs to have high numbers on the main diagonal and numbers close to $0$ elsewhere.
+
+The confusion matrix for the ResNet is
+$$
+\begin{pmatrix}
+18056 & 12 & 36 & 5 & 9 \\
+209 & 339 & 5 & 1 & 2 \\
+99 & 8 & 1313 & 23 & 5 \\
+52 & 0 & 16 & 94 & 0 \\
+47 & 0 & 10 & 0 & 1551
+\end{pmatrix}
+$$
+
+and the confusion matrix for the ODE-Net is
+$$
+\begin{pmatrix}
+17989 & 43 & 74 & 3 & 9 \\
+151 & 389 & 15 & 0 & 1 \\
+59 & 2 & 1376 & 10 & 1 \\
+36 & 0 & 26 & 100 & 0 \\
+36 & 0 & 16 & 0 & 1556
+\end{pmatrix}.
+$$
+
+We can see that the ODE-Net is slightly better since the number on the main diagonal are, for the most part, higher than those in the ResNet. But both models have high numbers on the first columns, it means that they classify a lot of point int the class $0$ when they aren't in this class.
+
+Another thing we can notice is that the ODE-Net has trouble classifying points in the class $0$ compared to the ResNet: when we look at the first line of each confusion matrix, the line from the ODE-Net has higher numbers in columns other than the first, which means that when points are in the class $0$, it often classifies them wrong.
 
 \section{Advantages and disadvantages of ODE-Nets}
 
