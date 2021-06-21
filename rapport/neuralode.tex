@@ -33,17 +33,19 @@
 \newpage
 \section{Introduction}
 
-In this document, we introduce ODE-Nets, which are deep neural networks models using ordinary differential equations. 
-ODE-Nets are a fairly recent field of study. It uses ODEs which are, on the contrary, very old and have been studied for a long time, and thus are well-known. 
+In this document, we introduce Neural Ordinary Differential Equation Networks (ODE-Nets), which are deep neural networks models using ordinary differential equations. 
+ODE-Nets are a fairly recent field of study. It uses ODEs which are, on the contrary, very old and have been studied for a long time, and thus are well-known. Unlike classical neural networks, the hidden layer in an ODE-Net is defined as a black box that uses an ODE solver.
 
-This model is very promising since it has advantages over simple neural networks, such as a constant memory cost as well as better results on continuous time series data.
+This model is very promising since it has advantages over simple neural networks, such as a constant memory cost as well as better results on continuous time series data. Furthermore, this infinite-depth approach helps model dynamical systems better.
+
+Why use ODE-Nets over regular neural networks? Sometimes it is more natural to describe a system by its dynamics rather than the observable which is sometimes hard to understand and describe. This often happens in Physics and Engineering.
 
 Here, we will focus in particular on the mathematical aspects of these neural networks. We will give definitions and properties for different notions such as ordinary differential equations, regular and residual neural networks, \dots
 
 At the end, we'll conclude with the advantages and disadvantages of ODE-nets.
 The code used to make the examples can be found at \url{https://github.com/DumezErika/ProjetMachineLearning}.
 
-We can begin by the basis and describe what is a machine learning problem.
+We can begin by the basis and describe what a machine learning problem is.
 
 \section{Machine Learning}
 In a typical machine learning problem \cite{7}, we have an output variable $Y$ to $p$ predictors $X_1,\dots, X_p$, also called input variables, where $p\in \mathbb{N}\backslash \{0\}$. The inputs belongs to an input space $\mathcal{X}$ and usually $\mathcal{X} \subset \mathbb{R}^p$. The output belongs to a output space $\mathcal{Y}$. If this is a regression problem, $\mathcal{Y} \subset \mathbb{R}$. But if we have a classification problem with $K$ categories, $\mathcal{Y} = \{1,2,\dots, K\}$.
@@ -368,13 +370,15 @@ We can then view the variables $z_t$ as a function $z$ of $t$. For example,
 \begin{equation*}
 z_1 := z(1) = f(x, 0) + x.
 \end{equation*}
-With that, we can write $F(z_t, t; \theta) = F(z(t), t, \theta)$. However, to find the solution to this Cauchy problem, we need the initial value of $z$, which is $z(t_0) := z_0 = x$ (the input).
+With that, we can write $F(z_t, t; \theta) = F(z(t), t, \theta)$. 
 
 ~
 
-We can see that in ResNets, the outputs of each layer are the solutions of an ODE using Euler's method (see Section \ref{euler}). The ODE from which it is a solution is $\frac{\partial z}{\partial t}(t) = f(z(t),t;\theta)$. But here we want to use a more precise method and then use a more complex ODE solver such as linear multi-step methods. With what we've just shown, it is possible.
+We can see that in ResNets, the outputs of each layer are the solutions of an ODE using Euler's method (see Section \ref{euler}). The ODE from which it is a solution is $\frac{\partial z}{\partial t}(t) = f(z(t),t;\theta)$. 
 
-If we consider that the value given by $f(z(t), t, \theta)$ is the derivative of $z(t)$, we obtain the following Cauchy problem:
+However, to find the solution to this Cauchy problem, we need the initial value of $z$, which is $z(t_0) := z_0 = x$ (the input). Here we want to use a more precise method and then use a more complex ODE solver such as linear multi-step methods. With what we've just shown, it is possible.
+
+We obtain the following Cauchy problem:
 \begin{equation}
 \label{cauchypb}
 \begin{cases}
