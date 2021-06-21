@@ -245,23 +245,6 @@ where $f_k$ is the function of the $k$th layer and its activation.
  \end{columns} 
 \end{frame}
 
-
-
-
-
-\subsection{Implicit Layers}
-\begin{frame}{Explicit and implicit layers}
-There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly} \cite{2}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer. 
-
-~
-
-We can also define them implicitly: we specify the condition we want the layer's output to satisfy. 
-
-\begin{definition}
-An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
-\end{definition}
-\end{frame}
-
 \section{Ordinary Differential Equations}
 \begin{frame}{First Order Ordinary Differential Equations}
 An\textit{ ordinary differential equation} (ODE) \cite{9} is an equation that describes the changes of a function through time. The goal is to compute that function from the ODE which describes its derivative. In this setting, time is a continuous variable.
@@ -349,10 +332,20 @@ when $h = 1$.
 
 \end{frame}
 
-
-
 \section{Neural ODE} \label{neuralode}
 \subsection{Introduction}
+
+\begin{frame}{Explicit and implicit layers}
+There is two different ways to define a layer : \textit{explicitly} or \textit{implicitly} \cite{2}. When we define a layer explicitly, we specify the exact sequence of operations to do from the input to the output layer. 
+
+~
+
+We can also define them implicitly: we specify the condition we want the layer's output to satisfy. 
+
+\begin{definition}
+An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
+\end{definition}
+\end{frame}
 
 \begin{frame}{Neural ODE}
 In a residual neural network, the output for an input $x$ is a composition of functions. We want to extract all these individual layers to only have one "shared" layer.
