@@ -209,7 +209,7 @@ An example of the representation of a ResNet is given in Figure \ref{exampleresn
 
 In these networks, the output of the $k+1$th layer is given by
 \begin{equation}\label{eqrn}
-x_{k+1} = x_k + f_k(x_k)
+z_{k+1} = z_k + f_k(z_k)
 \end{equation}
 where $f_k$ is the function of the $k$th layer and its activation. 
 
@@ -296,7 +296,7 @@ Suppose $f$ is uniformly Lipschitz continuous in $u$ and continuous in $t$. Then
 Unfortunately, it is not always possible to find a closed-form solution to a Cauchy problem.
 However we can approximate the solution and there exists a lot of ways to do that. One type of methods are the \textit{one-step methods} on which we will focus here \footnote{Other types of methods, for example multi-steps methods, are more accurate and find solutions closer the the real functions.}.
 
-Let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We can compute a finite number of points $(u_1, \dots, u_n)$ such that:
+Let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We obtain a finite number of points $(u_0, \dots, u_n)$ such that:
 $$
 \forall i\in \{0,\dots, n\},  u_i \approx u(t_i).
 $$
@@ -324,7 +324,7 @@ for a function $f$.
 
 If we look back at the formula in the ResNet (see Equation \ref{eqrn}), we can see that this is a special case of the formula for Euler method
 \begin{equation*}
-x_{k+1} = x_k + hf_k(x_k),
+z_{k+1} = z_k + hf_k(z_k),
 \end{equation*}
 when $h = 1$. It is with this observation that we can introduce neural ODE networks since ODE networks are inspired from this idea of using ODE solvers.
 
@@ -435,7 +435,7 @@ We now have the dynamics of $a(t)$
 \frac{\partial a(t)}{\partial t} = -a(t)\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
 \end{equation}
  
-As we are searching for $ a(t_0) = \frac{\partial L}{\partial z(t_0)}$, we need to solve an ODE for the adjoint backwards in time because the value for $a(t_N)$ is already known. The constraint on the last time point, which is simply the gradient of the loss with respect to $z(t_N)$, 
+As we are searching for $ a(t_0) = \frac{\partial \mathcal{L}}{\partial z(t_0)}$, we need to solve an ODE for the adjoint backwards in time because the value for $a(t_N)$ is already known. The constraint on the last time point, which is simply the gradient of the loss with respect to $z(t_N)$, 
 \begin{equation*}
 a(t_N) = \frac{\partial \mathcal{L}}{\partial z(t_N)},
 \end{equation*}
@@ -448,7 +448,7 @@ a(t_0) &=& a(t_N) + \int^{t_0}_{t_N} \frac{\partial a(t)}{\partial t} dt\\
 If we want to compute the gradient with respect to the parameters $\theta$, we have to evaluate another integral, which depends on both $z(t)$ and $a(t)$. We compute it using the chain rule and we obtain
 \begin{equation}
 \label{devtheta}
-\frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt.
+\frac{\partial \mathcal{L}}{\partial \theta} = - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt.
 \end{equation}
 To avoid computing each ODE on its own, we can do all of them at the same time. To do that we can generalize the ODE to
 \begin{eqnarray*}
@@ -500,7 +500,8 @@ We can also get gradients with respect to $t_0$ and $t_N$ by integrating the las
 With this generalized method, we have gradients of $\mathcal{L}$ for all possible inputs to an ODE solver. In the development above, we assumed that the loss function $\mathcal{L}$ depends only on the last time point $t_N$.
 
 
-We can represent this process with the Figure \ref{process}. As we can see, during the forward pass, the loss function is evaluated a each time to be able to determine the smallest error.
+In some cases, the loss function depends on the hidden states. In this situation, we can represent this process  with the Figure \ref{process}. As we can see, during the forward pass, the loss function depends on different values of the hidden states. Therefore, in the backward pass, the adjoint needs to be updated in the direction of the partial derivative of the loss with respect to each observation.
+
 \begin{figure}[!h]
 \center
 \includegraphics[scale=0.7]{fig2.png}

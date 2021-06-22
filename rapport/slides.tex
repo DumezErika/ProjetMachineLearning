@@ -50,12 +50,12 @@
 \end{frame}
 
 \section{Introduction}
-\begin{frame}{What are ODE-nets?}
+\begin{frame}{What are ODE-Nets?}
 
 \begin{itemize}
-\item[•] ODE-nets are deep neural networks models using ordinary differential equations;
+\item[•] ODE-Nets are deep neural networks models using ordinary differential equations;
 \item[•] Unlike classical neural networks, the hidden layer in an ODE-Net is defined as a black box that uses an ODE solver;
-\item[•] They have multiple advantages: constant memory cost, better results in continuous time series data and they are sometime more natural to use
+\item[•] They have multiple advantages: constant memory cost, better results in continuous time series data and they are sometime more natural to use.
 \end{itemize}
 
 ~
@@ -190,7 +190,7 @@ Let $\theta$ be the parameters of the network. We want to find $\theta^*$ which 
 
 ~
 
-We want to determine the partial derivatives of the loss function with respect to the parameters, $\frac{\partial L}{\partial \theta}$, and find $\theta^*$ such that these derivatives are $0$.
+We want to determine the partial derivatives of the loss function with respect to the parameters, $\frac{\partial \mathcal{L}}{\partial \theta}$, and find $\theta^*$ such that these derivatives are $0$.
 
 ~
 
@@ -201,7 +201,7 @@ We want to determine the partial derivatives of the loss function with respect t
 \begin{frame}{Gradient Descent}
 \textit{Gradient descent} \cite{1} is a process used to approximate a local minimum of a differentiable function. 
 
-It works as follow: at each step of the process, we take a step in the opposite direction of the gradient of the function at the current point.
+It works as follows: at each step of the process, we take a step in the opposite direction of the gradient of the function at the current point.
 
 ~
 
@@ -236,7 +236,7 @@ A\textit{ residual neural network} \cite{6}, also called ResNet, is a neural net
   
   In these networks, the output of the $k+1$th layer is given by
 $
-x_{k+1} = x_k + f_k(x_k)
+z_{k+1} = z_k + f_k(z_k)
 $,
 where $f_k$ is the function of the $k$th layer and its activation. 
   \end{center}
@@ -299,7 +299,7 @@ It is not always possible to explicitly find a solution to a Cauchy problem.
 
 ~
 
-However, let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We can compute a finite number of points $(u_1, \dots, u_n)$ such that:
+However, let $T > 0$ such that the solution $u$ exists on $[t_0, t_0 + T]$ and let $n \geqslant 2$ be a natural. Let  $t_0 < ... < t_n \in [t_0, t_0 + T]$ where $t_n = t_0 + T$. We obtain a finite number of points $(u_0, \dots, u_n)$ such that:
 $$
 \forall i\in \{0,\dots, n\},  u_i \approx u(t_i).
 $$
@@ -326,7 +326,7 @@ for a function $f$.
 If we look back at the formula in the ResNet, we can see
 that this is a special case of the formula for Euler method
 \begin{equation*}
-x_{k+1} = x_k + hf_k(x_k),
+z_{k+1} = z_k + hf_k(z_k),
 \end{equation*}
 when $h = 1$.
 
@@ -343,7 +343,7 @@ There is two different ways to define a layer : \textit{explicitly} or \textit{i
 We can also define them implicitly: we specify the condition we want the layer's output to satisfy. 
 
 \begin{definition}
-An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an implicit layer, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
+An \textit{explicit layer} is defined by a function $f : \mathcal{X} \rightarrow \mathcal{Y}$. For an \textit{implicit layer}, we give a condition that a function $g: \mathcal{X} \times \mathcal{Y} \rightarrow \mathbb{R}^n$ should satisfy. For example we can search for a $y$ such that $g(x,y) = 0$.
 \end{definition}
 \end{frame}
 
@@ -469,7 +469,7 @@ a(t) = a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}.
 &=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)\frac{\partial z(t) + \varepsilon f(z(t),t,\theta) + O(\varepsilon^2)}{\partial z(t)}}{\varepsilon} \\
 &=& \lim_{\varepsilon \rightarrow 0^+} \frac{a(t+\varepsilon) - a(t+\varepsilon)(\mathds{1} + \varepsilon \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ O(\varepsilon^2))}{\varepsilon}\\
 &=& \lim_{\varepsilon \rightarrow 0^+} \frac{-\varepsilon a(t+\varepsilon) \frac{\partial f(z(t),t,\theta)} {\partial z(t)}+ O(\varepsilon^2)}{\varepsilon}\\
-&=& -a(t)\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
+&=& -a(t)\frac{\partial f(z(t),t;\theta)} {\partial z(t)}
 \end{eqnarray*}
 \end{frame}
 
@@ -477,10 +477,10 @@ a(t) = a(t+\varepsilon)\frac{\partial G(\varepsilon)}{\partial z(t)}.
 We now have the dynamics of $a(t)$
 \begin{equation}
 \label{dynat}
-\frac{\partial a(t)}{\partial t} = -a(t)\frac{\partial f(z(t),t,\theta)} {\partial z(t)}
+\frac{\partial a(t)}{\partial t} = -a(t)\frac{\partial f(z(t),t;\theta)} {\partial z(t)}
 \end{equation}
  
-As we are searching for $ a(t_0) = \frac{\partial L}{\partial z(t_0)}$, we need to solve an ODE for the adjoint backwards in time because the value for $a(t_N)$ is already known. The constraint on the last time point, which is simply the gradient of the loss with respect to $z(t_N)$, 
+As we are searching for $ a(t_0) = \frac{\partial \mathcal{L}}{\partial z(t_0)}$, we need to solve an ODE for the adjoint backwards in time because the value for $a(t_N)$ is already known. The constraint on the last time point, which is simply the gradient of the loss with respect to $z(t_N)$, 
 \begin{equation*}
 a(t_N) = \frac{\partial \mathcal{L}}{\partial z(t_N)},
 \end{equation*}
@@ -490,16 +490,12 @@ has to be specified to the ODE solver.
 \begin{frame}{Adjoint method}
 Then, the gradients with respect to the hidden state can be calculated at any time, including the initial value. 
 
-We have 
+~
 
-\begin{eqnarray*}
-a(t_0) &=& a(t_N) + \int^{t_0}_{t_N} \frac{\partial a(t)}{\partial t} dt \\
-	   &=& a(t_N) - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t,\theta)} {\partial z(t)} dt \text{ par (\ref{dynat})}.
-\end{eqnarray*}
 If we want to compute the gradient with respect to the parameters $\theta$, we have to evaluate another integral, which depends on both $z(t)$ and $a(t)$,
 \begin{equation}
 \label{devtheta}
-\frac{\partial L}{\partial \theta} = - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t,\theta)} {\partial \theta} dt.
+\frac{\partial \mathcal{L}}{\partial \theta} = - \int^{t_0}_{t_N} a(t) \frac{\partial f(z(t),t;\theta)} {\partial \theta} dt.
 \end{equation}
 \end{frame}
 
@@ -542,22 +538,7 @@ We can inject $a_{aug}$ in (\ref{dynat}) and we get
 \end{frame}
 
 \begin{frame}{Adjoint method}
-We can see that the first component $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial z(t)}$ of the vector $\frac{\partial a_{aug}(t)}{\partial t}$ is the adjoint differential equation that we calculated previously in (\ref{dynat}). 
-
-~
-
-The total gradient with respect to the parameters is given by integrating the second component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial \theta(t)}$ over the full interval and by setting $a_\theta (t_N) = \textbf{0}$. 
-
-~
-
-We obtain 
-\begin{equation*}
-\frac{\partial \mathcal{L}}{\partial \theta} = a_\theta (t_0) = - \int_{t_N}^{t_0} a(t) \frac{\partial f(z(t),t,\theta)}{\partial \theta} dt.
-\end{equation*}
-\end{frame}
-
-\begin{frame}{Adjoint method}
-We can also get gradients with respect to $t_0$ and $t_N$ by integrating the last component, $-a(t)\frac{\partial f(z(t),t,\theta)}{\partial t(t)}$, and by using the Chain rule. 
+We can also get gradients with respect to $t_0$ and $t_N$ by integrating the last component, $-a(t)\frac{\partial f(z(t),t;\theta)}{\partial t(t)}$, and by using the Chain rule. 
 
 We have
 \begin{eqnarray*}
@@ -565,14 +546,6 @@ We have
 \frac{\partial \mathcal{L}}{\partial t_N} &=& \frac{\partial \mathcal{L}}{\partial z(t_N)} \frac{\partial z(t_N)}{\partial t_N} = a(t_N)f(z(t_N),t_N,\theta).
 \end{eqnarray*}
 With this generalized method, we have gradients for all possible inputs to a Cauchy problem solver. 
-\end{frame}
-
-\begin{frame}{Adjoint method}
-We can represent this process with this figure\footnote{The figure has been taken from \cite{12}.}. As we can see, during the forward pass, the loss function is evaluated a each time to be able to determine the smallest error.
-
-\begin{center}
-\includegraphics[scale=0.6]{fig2.png}
-\end{center}
 \end{frame}
 
 \section{Simulated Data}
@@ -651,17 +624,17 @@ We will build a ResNet and a ODE-Net as similar as possible so that we can compa
 ~
 
 \begin{itemize}
-\item[•] The ResNet is composed of $3$ first fully connected layers with ReLU as activation function, followed by $6$ residual blocks also with ReLU. The output layer is a simple fully connected layer;
-\item[•] The ODE-Net is composed similarly of $3$ first fully connected layers, each followed by the activation function ReLU. The dynamics are defined by a fully connected layer taking time into account. The output layer is the same as for the ResNet, i.e. a simple fully connected layer.
+\item[•] The ResNet is composed of $3$ firstlayers with ReLU as activation function, followed by $6$ residual blocks also with ReLU. The output layer is a simple layer;
+\item[•] The ODE-Net is composed similarly of $3$ first layers, each followed by the activation function ReLU. The dynamics are defined by a layer taking time into account. The output layer is the same as for the ResNet, i.e. a simple layer.
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Architecture of the models}
-To optimize our model we use the cross entropy error. The parameters are then updated using stochastic gradient descent with a learning rate of $0.1$ and a momentum of $0.9$. 
+To optimize our model we use the cross entropy error. The parameters are then updated using stochastic gradient descent with a step-size of $0.1$ and a momentum of $0.9$. 
 
 ~
 
-Stochastic Gradient Descent with momentum is a method that accelerate the computation of the gradient and thus leads to faster converging\cite{8}include.
+Stochastic Gradient Descent with momentum is a method that accelerate the computation of the gradient and thus leads to faster converging \cite{8}.
 
 ~
 
@@ -679,7 +652,7 @@ In this figure we can see the evolution of the training and testing error of the
 \begin{frame}{Results for the ODE-Net}
 In this figure we can see the evolution of the training and testing error of the ODE-Net. At the end of training, the ODE-Net had a test error of $0.09$.
 \begin{center}
-\includegraphics[scale=0.4]{resnet_rd_loss.png}
+\includegraphics[scale=0.4]{odenet_rd_loss.png}
 \end{center}
 Therefore, the ODE-Net performs slightly better than the ResNet and the figures show that the ODE-Net learns faster since the curve decreases in less epochs.
 \end{frame}
