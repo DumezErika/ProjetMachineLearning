@@ -28,8 +28,10 @@ if __name__ == "__main__":
     num_epochs = 18
     
     # Affiche l'évolution des points durant le training
-    feature_history = get_feature_history(trainer, dataloader, inputs,
-                                            targets, num_epochs)
+    dataloader_viz = DataLoader(data_concentric, batch_size=256, shuffle=True)
+    for inputs, targets in dataloader_viz:
+        feature_history = get_feature_history(trainer, dataloader, inputs,targets, num_epochs)
+        break
                                             
     multi_feature_plt(feature_history[::2], targets)
 
